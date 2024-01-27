@@ -1,6 +1,6 @@
 ***NOTE: When visiting this application make sure that you are using the protocol <ins>https</ins> and NOT http otherwise the application will not work!***
 
-***NOTE: [SocialPulse](https://github.com/GeorgiosIoannouCoder/socialpulse) is  an extension of [MergeMe](https://github.com/GeorgiosIoannouCoder/mergeme).***
+***NOTE: [SocialPulse2](https://github.com/GeorgiosIoannouCoder/socialpulse2) is  an extension of [MergeMe](https://github.com/GeorgiosIoannouCoder/mergeme).***
 
 <a name="readme-top"></a>
 
@@ -12,7 +12,7 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![GitHub][github-shield]][github-url]
 
-# [SocialPulse](https://socialpulse-9a2adcafece8.herokuapp.com/) | Social Media Platform
+# [SocialPulse2](https://socialpulse-9a2adcafece8.herokuapp.com/) | Social Media Platform
 
 <br />
 <div align="center">
@@ -20,19 +20,19 @@
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
-<h3 align="center">SocialPulse</h3>
+<h3 align="center">SocialPulse2</h3>
 
   <p align="center">
-    <b>SocialPulse</b> is a <b>Social Media Platform</b> with main purpose to <b>Connect</b> people around the globe.<b>SocialPulse</b> is a social media platform where people can communicate with each other in real-time, create and share posts, and create networks such as group chats with each other. <b>SocialPulse</b> is appealing because it is simple to use without any unnecessary features and thus make it straightforward for the users to <b>Connect</b> with each other. Moreover, the proposed software is special because it implements a real-time chat feature that enables users to chat inside the web application without the need to download any external software such as a messenger.
+    <b>SocialPulse2</b> is an AI multimodal <b>Social Media Platform</b> with main purpose to <b>Connect</b> people around the globe.<b>SocialPulse2</b> is a social media platform where people can communicate with each other in real-time, create and share posts, and create networks such as group chats with each other. <b>SocialPulse2</b> is appealing because it is simple to use without any unnecessary features and thus make it straightforward for the users to <b>Connect</b> with each other. Moreover, the proposed software is special because it implements a real-time chat feature that enables users to chat inside the web application without the need to download any external software such as a messenger.
     <br />
-    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://socialpulse-9a2adcafece8.herokuapp.com/">View Web Application</a>
     ·
-    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse/issues">Report Bug</a>
+    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2/issues">Report Bug</a>
     ·
-    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse/issues">Request Feature</a>
+    <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2/issues">Request Feature</a>
   </p>
 </div>
 
@@ -68,22 +68,22 @@
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
-#### <ins>***SocialPulse tries to solve the following problem statement in the social media industry:***</ins>
+#### <ins>***SocialPulse2 tries to solve the following problem statement in the social media industry:***</ins>
 
 - **People need a social media built by the people for the people, without heavy advertisements and platform negativity!**
 
 ### Key Features
 
 1. **Five type of users:**
-   1. ***[Super User (SU)](https://github.com/GeorgiosIoannouCoder/socialpulse#usage)***
+   1. ***[Super User (SU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Super users on our platform are capable of adding/removing warnings on the user's profile page along with deleting users and posts.**
-   2. ***[Corporate User (CU)](https://github.com/GeorgiosIoannouCoder/socialpulse#usage)***
+   2. ***[Corporate User (CU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Corporate users can distinguish whether their post is a regular, ad, or job posting.**
-   3. ***[Trendy User (TU)](https://github.com/GeorgiosIoannouCoder/socialpulse#usage)***
+   3. ***[Trendy User (TU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Users are automatically promoted to trendy users if they have the specified requirements: a) subscribed by >10 users, and b) received >$100 tips or #likes-#dislikes >10, and c) author of at least 2 trendy messages**
-   4. ***[Ordinary User (OU)](https://github.com/GeorgiosIoannouCoder/socialpulse#usage)***
+   4. ***[Ordinary User (OU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Ordinary users can post/delete, comment, tip, like/dislike, report, and follow users.**
-   5. ***[Surfer](https://github.com/GeorgiosIoannouCoder/socialpulse#usage)***
+   5. ***[Surfer](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Surfers can view the “Popular” Page where they can view the top 3 most liked messages and report these posts.**
 1. **Sign-up page with a real-time validation and feedback form.**
 2. **Fully customizable profile where people can also upload pictures and edit them in the web application.**
@@ -152,7 +152,7 @@
 
 ## Getting Started
 
-**To get a local copy of SocialPulse up and running locally follow these simple example steps:**
+**To get a local copy of SocialPulse2 up and running locally follow these simple example steps:**
 
 ### Prerequisites
 
@@ -169,7 +169,7 @@
   git -v
 ```
 
-1. Please make sure you have Node and npm installed and use Node version: **v16.15.0**. For all other package versions please look at [package.json](https://github.com/GeorgiosIoannouCoder/socialpulse/blob/main/package.json) file.
+1. Please make sure you have Node and npm installed and use Node version: **v16.15.0**. For all other package versions please look at [package.json](https://github.com/GeorgiosIoannouCoder/socialpulse2/blob/main/package.json) file.
     - You can use nvm to switch between different node versions:
       - Windows: [https://github.com/coreybutler/nvm-windows](https://github.com/coreybutler/nvm-windows)
       - Mac: [https://www.youtube.com/watch?v=BhLFxy6Jz8c](https://www.youtube.com/watch?v=BhLFxy6Jz8c)
@@ -193,13 +193,13 @@
 2. Clone this repository
 
    ```sh
-   git clone https://github.com/GeorgiosIoannouCoder/socialpulse.git
+   git clone https://github.com/GeorgiosIoannouCoder/socialpulse2.git
    ```
 
-3. Navigate to the socialpulse git repository
+3. Navigate to the socialpulse2 git repository
 
    ```sh
-   cd socialpulse
+   cd socialpulse2
    ```
 
 4. Install NPM packages
@@ -208,7 +208,7 @@
    npm i
    ```
 
-5. Create a config.env file inside the socialpulse directory
+5. Create a config.env file inside the socialpulse2 directory
 
    ***Note:***
 
@@ -227,7 +227,7 @@
     CLOUDINARY_CLOUD_NAME=your_cludinary_cloud_name
     ```
 
-6. Create a next.config.js file inside the socialpulse directory
+6. Create a next.config.js file inside the socialpulse2 directory
 
    ***Note:***
 
@@ -254,7 +254,7 @@
 
 ## Usage
 
-To try the SocialPulse application click on this [link](https://socialpulse-9a2adcafece8.herokuapp.com/)!
+To try the SocialPulse2 application click on this [link](https://socialpulse-9a2adcafece8.herokuapp.com/)!
 
 You can use the following two accounts to test the application in case that you do not want to register:
 
@@ -278,8 +278,8 @@ You can use the following two accounts to test the application in case that you 
 
 ## Reports
 
-1. **[Report Phase 1](https://github.com/GeorgiosIoannouCoder/socialpulse/blob/main/reports/Phase1.pdf). This report illustrates the purpose, scope, overall description, and use-case of the project.**
-2. **[Report Phase 2](https://github.com/GeorgiosIoannouCoder/socialpulse/blob/main/reports/Phase2.pdf). This report is meant to provide the data structure and logic to carry out the functionalities dictated by the specification. It includes a collaboration class diagram, all use case scenarios (normal and exceptional scenarios), petri-net, er-diagram, and GUI screens.**
+1. **[Report Phase 1](https://github.com/GeorgiosIoannouCoder/socialpulse2/blob/main/reports/Phase1.pdf). This report illustrates the purpose, scope, overall description, and use-case of the project.**
+2. **[Report Phase 2](https://github.com/GeorgiosIoannouCoder/socialpulse2/blob/main/reports/Phase2.pdf). This report is meant to provide the data structure and logic to carry out the functionalities dictated by the specification. It includes a collaboration class diagram, all use case scenarios (normal and exceptional scenarios), petri-net, er-diagram, and GUI screens.**
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
@@ -300,11 +300,11 @@ Don't forget to give the project a star! Thanks again!
 
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/GeorgiosIoannouCoder/socialpulse/blob/master/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/GeorgiosIoannouCoder/socialpulse2/blob/master/LICENSE) for more information.
 
 MIT License
 
-Copyright (c) 2023 Georgios Ioannou
+Copyright (c) 2024 Georgios Ioannou
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -332,24 +332,24 @@ Georgios Ioannou - [@LinkedIn](https://linkedin.com/in/georgiosioannoucoder)
 
 Georgios Ioannou - [@georgiosioannoucoder](https://georgiosioannoucoder.github.io/) - Please contact me via the form in my portfolio.
 
-Project Link: [https://github.com/GeorgiosIoannouCoder/socialpulse](https://github.com/GeorgiosIoannouCoder/socialpulse)
+Project Link: [https://github.com/GeorgiosIoannouCoder/socialpulse2](https://github.com/GeorgiosIoannouCoder/socialpulse2)
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
-[contributors-shield]: https://img.shields.io/github/contributors/GeorgiosIoannouCoder/socialpulse.svg?style=for-the-badge
-[contributors-url]: https://github.com/GeorgiosIoannouCoder/socialpulse/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/GeorgiosIoannouCoder/socialpulse2.svg?style=for-the-badge
+[contributors-url]: https://github.com/GeorgiosIoannouCoder/socialpulse2/graphs/contributors
 
-[forks-shield]: https://img.shields.io/github/forks/GeorgiosIoannouCoder/socialpulse.svg?style=for-the-badge
-[forks-url]: https://github.com/GeorgiosIoannouCoder/socialpulse/network/members
+[forks-shield]: https://img.shields.io/github/forks/GeorgiosIoannouCoder/socialpulse2.svg?style=for-the-badge
+[forks-url]: https://github.com/GeorgiosIoannouCoder/socialpulse2/network/members
 
-[stars-shield]: https://img.shields.io/github/stars/GeorgiosIoannouCoder/socialpulse.svg?style=for-the-badge
-[stars-url]: https://github.com/GeorgiosIoannouCoder/socialpulse/stargazers
+[stars-shield]: https://img.shields.io/github/stars/GeorgiosIoannouCoder/socialpulse2.svg?style=for-the-badge
+[stars-url]: https://github.com/GeorgiosIoannouCoder/socialpulse2/stargazers
 
-[issues-shield]: https://img.shields.io/github/issues/GeorgiosIoannouCoder/socialpulse.svg?style=for-the-badge
-[issues-url]: https://github.com/GeorgiosIoannouCoder/socialpulse/issues
+[issues-shield]: https://img.shields.io/github/issues/GeorgiosIoannouCoder/socialpulse2.svg?style=for-the-badge
+[issues-url]: https://github.com/GeorgiosIoannouCoder/socialpulse2/issues
 
-[license-shield]: https://img.shields.io/github/license/GeorgiosIoannouCoder/socialpulse.svg?style=for-the-badge
-[license-url]: https://github.com/GeorgiosIoannouCoder/socialpulse/blob/master/LICENSE
+[license-shield]: https://img.shields.io/github/license/GeorgiosIoannouCoder/socialpulse2.svg?style=for-the-badge
+[license-url]: https://github.com/GeorgiosIoannouCoder/socialpulse2/blob/master/LICENSE
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=0077B5
 [linkedin-url]: https://linkedin.com/in/georgiosioannoucoder
