@@ -1,0 +1,47 @@
+{
+  "name": "socialpulse",
+  "version": "1.0.0",
+  "description": "SocialPulse is a Social Media Platform with main purpose to Connect people around the globe. SocialPulse is a social media platform where people can communicate with each other in real-time, create and share posts, and create networks such as group chats with each other.",
+  "engines": {
+    "node": "16.15.0"
+  },
+  "private": false,
+  "scripts": {
+    "dev": "nodemon server.js",
+    "build": "next build",
+    "start": "NODE_ENV=production node server.js"
+  },
+  "author": "socialpulse-Georgios_Ioannou-Christian_Rasmussen-Leon_Belegu-Selma_Doganata-Jolie_Huang",
+  "license": "ISC",
+  "dependencies": {
+    "@artsy/fresnel": "^1.2.2",
+    "axios": "^0.21.0",
+    "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "js-cookie": "^2.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "mongoose": "^5.9.14",
+    "next": "^10.0.3",
+    "nodemailer": "^6.4.8",
+    "nodemailer-sendgrid-transport": "^0.2.0",
+    "nookies": "^2.3.0",
+    "nprogress": "^0.2.0",
+    "react": "16.13.1",
+    "react-cropper": "^2.1.8",
+    "react-dom": "16.13.1",
+    "react-infinite-scroll-component": "6.0.0",
+    "react-moment": "^0.9.7",
+    "react-router-dom": "^6.20.0",
+    "react-toastify": "^6.0.5",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^2.0.0",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
+    "uuid": "^8.2.0",
+    "validator": "^13.0.0"
+  }
+}
