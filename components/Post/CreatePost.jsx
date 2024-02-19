@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+
 import {
   Form,
   Button,
@@ -156,6 +157,13 @@ function CreatePost({ user, setPosts }) {
       if (!audioUploadUrl) {
         return setError("Error Uploading Audio!");
       }
+      let { pipeline, env } = await import('@xenova/transformers');
+      env.allowLocalModels = false;
+      env.useBrowserCache = false;
+  
+      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+      const output = await transcriber(audioUploadUrl);
+      console.log("Output: ", output)
     }
 
     await submitNewPost(
