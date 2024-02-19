@@ -55,6 +55,15 @@ export const NoPosts = () => (
   />
 );
 
+export const NoPostFound = () => (
+  <Message
+    info
+    icon="thumbs down"
+    header="Hey!"
+    content="No Posts To Display!"
+  />
+);
+
 export const NoProfile = () => (
   <Message info icon="meh" header="Hey!" content="No Profile Found." />
 );
