@@ -14,6 +14,8 @@ const options = {
 };
 
 const transporter = nodemailer.createTransport(sendGridTransport(options));
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.sendGrid_api);
 
 // Send the reset password email.
 router.post("/", async (req, res) => {
@@ -50,6 +52,14 @@ router.post("/", async (req, res) => {
     };
 
     transporter.sendMail(mailOptions, (err, info) => err && console.log(err));
+    sgMail
+      .send(mailOptions)
+      .then(() => {
+        console.log("Email sent!");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     return res.status(200).send("Email sent successfully!");
   } catch (error) {
