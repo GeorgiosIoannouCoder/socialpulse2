@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { parseCookies } from "nookies";
 import Link from "next/link";
@@ -232,7 +232,7 @@ function PostPage({ post, errorLoading, user, setPosts, setShowToastr }) {
                 }}
                 onCopy={(e) => e.preventDefault()}
               >
-                {post.text}
+                {post.text}       // Use this for the input
               </Card.Description>
               <Button
                 as="div"

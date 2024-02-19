@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Progress from '../../ml_components/Progress'
 import {
   Card,
   Icon,
@@ -121,6 +122,61 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
 
   const [showFullText, setShowFullText] = useState(false);
 
+  const [result, setResult] = useState(null);
+  const [ready, setReady] = useState(null);
+
+  const [output, setOutput] = useState('');
+
+  // Create a reference to the worker object.
+  const worker = useRef(null);
+
+  
+
+
+  // We use the `useEffect` hook to setup the worker as soon as the `App` component is mounted.
+  useEffect(() => {
+    if (!worker.current) {
+      // Create the worker if it does not yet exist.
+      worker.current = new Worker(new URL('../../ml_components/worker.js', import.meta.url), {
+          type: 'module'
+      });
+    }
+
+    // Create a callback function for messages from the worker thread.
+    const onMessageReceived = (e) => {
+      switch (e.data.status) {
+        case 'initiate':
+          setReady(false);
+          break;
+        case 'ready':
+          setReady(true);
+          break;
+        case 'complete':
+          setResult(e.data.output[0])
+          break;
+      }
+    };
+
+    // Attach the callback function as an event listener.
+    worker.current.addEventListener('message', onMessageReceived);
+
+    // Define a cleanup function for when the component is unmounted.
+    return () => worker.current.removeEventListener('message', onMessageReceived);
+  });
+
+
+  const classify = useCallback((text) => {
+    if (worker.current) {
+      worker.current.postMessage({ text });
+    }
+  }, []);
+
+
+  const handleButtonClick = () => {
+    classify(post.text)
+  };
+
+
   return (
     <>
       {showModal && (
@@ -232,6 +288,14 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
             >
               {post.text}
             </Card.Description>
+
+            <button onClick={handleButtonClick}>Analyze</button>
+
+            {ready !== null && (
+              <pre className="bg-gray-100 p-2 rounded">
+              { (!ready || !result) ? 'Loading...' : JSON.stringify(result, null, 2) }
+              </pre>
+            )}
 
             <Button
               as="div"
