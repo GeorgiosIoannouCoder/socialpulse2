@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Button,
@@ -39,6 +39,68 @@ function CreatePost({ user, setPosts }) {
     setNewPost((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ------------------- stuff for recording users audio -------------------
+  // instantiating variables
+  const [permission, setPermission] = useState(false);
+  const mediaRecorder = useRef(null);
+  const [recordingStatus, setRecordingStatus] = useState("inactive");
+  const [stream, setStream] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [audio, setAudio] = useState(null);
+  const mimeType = "audio/webm";
+
+  // getting the microphone permission from the user
+  const getMicrophonePermission = async () => {
+    if ("MediaRecorder" in window) {
+      try {
+        const streamData = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
+        });
+        setPermission(true);
+        setStream(streamData);
+      } catch (err) {
+        alert(err.message);
+      }
+    } else {
+      alert("The MediaRecorder API is not supported in your browser.");
+    }
+  };
+
+  // starting the recording
+  const startRecording = async () => {
+    setRecordingStatus("recording");
+    //create new Media recorder instance using the stream
+    const media = new MediaRecorder(stream, { type: mimeType });
+    //set the MediaRecorder instance to the mediaRecorder ref
+    mediaRecorder.current = media;
+    //invokes the start method to start the recording process
+    mediaRecorder.current.start();
+    let localAudioChunks = [];
+    mediaRecorder.current.ondataavailable = (event) => {
+      if (typeof event.data === "undefined") return;
+      if (event.data.size === 0) return;
+      localAudioChunks.push(event.data);
+    };
+    setAudioChunks(localAudioChunks);
+  };
+
+  // stopping the recording
+  const stopRecording = () => {
+    setRecordingStatus("inactive");
+    //stops the recording instance
+    mediaRecorder.current.stop();
+    mediaRecorder.current.onstop = () => {
+      //creates a blob file from the audiochunks data
+      const audioBlob = new Blob(audioChunks, { type: mimeType });
+      //creates a playable URL from the blob file.
+      const audioURL = URL.createObjectURL(audioBlob);
+      setAudio(audioURL);
+      console.log('this is the url:', audioURL);
+      setAudioChunks([]);
+    };
+  };
+  //--------------------------------------------------------------------------------------
   const addStyles = () => ({
     textAlign: "center",
     height: "150px",
@@ -160,6 +222,90 @@ function CreatePost({ user, setPosts }) {
           />
         </Form.Group>
 
+        {/* button so users can record their own audio */}
+        {/* <Button
+          onClick={isRecording ? offRecord : onRecord}
+          style={{
+            padding: "1em",
+            marginLeft: "2em",
+            marginBottom: "2em",
+            marginTop: "0em",
+          }}
+        >
+          <Icon name="microphone" fitted />
+        </Button>
+        <div
+          style={{
+            display: "inline-block",
+            float: "right",
+            marginRight: "5em",
+          }}
+        >
+          {audioURL && <audio src={audioURL} controls />}
+        </div> */}
+
+        {/* adding the buttons for get access to the mic and recording/stoping the recording */}
+        <div className="audio-controls">
+          {!permission ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={getMicrophonePermission}
+              type="button"
+            >
+              Get Microphone
+            </Button>
+          ) : null}
+          {permission && recordingStatus === "inactive" ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={startRecording}
+              type="button"
+            >
+              Start Recording
+            </Button>
+          ) : null}
+          {recordingStatus === "recording" ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={stopRecording}
+              type="button"
+            >
+              Stop Recording
+            </Button>
+          ) : null}
+        </div>
+        {audio ? (
+          <div
+            style={{
+              display: "inline-block",
+              float: "right",
+              marginRight: "5em",
+              marginBottom: "-10em",
+              position: 'relative', 
+              top: '-71px',
+            }}
+            className="audio-container"
+          >
+            <audio src={audio} controls></audio>
+          </div>
+        ) : null}
+
+        {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
           <Dropdown
