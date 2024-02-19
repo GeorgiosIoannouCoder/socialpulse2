@@ -28,7 +28,7 @@ function TokenPage() {
     setLoading(true);
     try {
       if (field1 !== field2) {
-        return setErrorMsg("Passwords do not match");
+        return setErrorMsg("Passwords do not match!");
       }
 
       await axios.post(`${baseUrl}/api/reset/token`, {

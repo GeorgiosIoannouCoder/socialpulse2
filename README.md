@@ -1,6 +1,6 @@
 ***NOTE: When visiting this application make sure that you are using the protocol <ins>https</ins> and NOT http otherwise the application will not work!***
 
-***NOTE: [SocialPulse2](https://github.com/GeorgiosIoannouCoder/socialpulse2) is  an extension of [MergeMe](https://github.com/GeorgiosIoannouCoder/mergeme).***
+***NOTE: [SocialPulse2](https://github.com/GeorgiosIoannouCoder/socialpulse2) is  an extension of [SocialPulse](https://github.com/GeorgiosIoannouCoder/socialpulse).***
 
 <a name="readme-top"></a>
 
@@ -12,13 +12,13 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![GitHub][github-shield]][github-url]
 
-# [SocialPulse2](https://socialpulse-9a2adcafece8.herokuapp.com/) | Social Media Platform
+# [SocialPulse2](https://socialpulse2-734cc2ffad19.herokuapp.com) | Social Media Platform
 
 Hello everyone!!
 
 <br />
 <div align="center">
-  <a href="https://socialpulse-9a2adcafece8.herokuapp.com/">
+  <a href="https://socialpulse2-734cc2ffad19.herokuapp.com">
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
@@ -30,7 +30,7 @@ Hello everyone!!
     <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://socialpulse-9a2adcafece8.herokuapp.com/">View Web Application</a>
+    <a href="https://socialpulse2-734cc2ffad19.herokuapp.com">View Web Application</a>
     ·
     <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2/issues">Report Bug</a>
     ·
@@ -66,7 +66,7 @@ Hello everyone!!
 
 ## About The Project
 
-<a href="https://socialpulse-9a2adcafece8.herokuapp.com/">
+<a href="https://socialpulse2-734cc2ffad19.herokuapp.com">
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
@@ -87,42 +87,44 @@ Hello everyone!!
       1. **Ordinary users can post/delete, comment, tip, like/dislike, report, and follow users.**
    5. ***[Surfer](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Surfers can view the “Popular” Page where they can view the top 3 most liked messages and report these posts.**
-1. **Sign-up page with a real-time validation and feedback form.**
-2. **Fully customizable profile where people can also upload pictures and edit them in the web application.**
-3. **Reset password functionality.**
-4. **Live search functionality where users can search for other users and the searches are automatically stored in their search history.**
-5. **Follow and unfollow users.**
-6. **Add and delete posts and comments.**
-7. **Enable location with each post.**
-8.  **Allow users to like and react with emojis on each post and comment.**
-9.  **Receive notifications for each new activity that is related to each user.**
-10. **Infinite scroll to fetch more data as you keep scrolling down the news feed.**
-11. **Real-time chat without the need to reload the web page or download any external software such as a messenger.**
-12. **Display the status of each user such as green for online status, grey for away status, and red for offline status.**
-13. **An option that allows users to have an instant pop-up message on their screen when they receive a chat message.**
-14. **Ability to report posts and profiles and specifying the reason of reporting.**
-15. **Functionality to promote Ordinary Users to Trendy Users, and Ordinary posts to Trendy posts.**
-16. **Ability to upload and crop images and videos when posting.**
-17. **Ability to add keywords to posts to further personalize it.**
-18. **A special advanced search feature, to search posts based on number of likes/dislikes, keywords, and/or usernames.**
-19. **1-to-1 messaging with other registered users in the application.**
-20. **Ability to tip posts with a specified amount of money.**
-21. **Ability to deposit/withdraw money into your account.**
-22. **A warnings tab within the navigation bar to view the number of warnings, reports, and disputes that must be attended to.**
-23. **Comprehensive functionality for disputing reports and warnings.**
-24. **Fisher-Yates Algorithm to recommend possible users to connect with.**
-25. **Blurring the post until they click the read button.**
-26. **The like/dislike/report post/read button shows list of users who did that action.**
-27. **CU is allowed to post ads and job applications that other users can click and apply, CU will pay the system (SU) by $0.1 for each click and application.**
-28. **ll users can search for messages based on author, keywords, with/without images and or videos, #of likes/dislikes.**
-29. **Any user receiving warning can dispute with the SU: if winning the dispute the warning is removed: if the warning is initialized by another user, the user who reported complained will be warned once; if the warning is by a surfer, the complained user is rewarded by 3 likes from the SU. Any CU/OU with 3 outstanding warnings will be given the choice of paying out the fine to remove the complaints or removed from the system. Any TU with 3 outstanding warnings will be demoted to OU with no warnings.**
-30. **TU/OU can post messages with <=20 words (an image is equivalent to 10 words, while a video is equivalent to 15 words) for free, any message >20 words will be billed by the system automatically with the amount (# - 20)*$0. 1; a CU's message is billed #*$1 without free ones. If the user does not have enough money in the account, a warning is issued and when the user logging will be automatically directed to the payment page.**
+2. **Sign-up page with a real-time validation and feedback form.**
+3. **Fully customizable profile where people can also upload pictures and edit them in the web application.**
+4. **Reset password functionality.**
+5. **Live search functionality where users can search for other users and the searches are automatically stored in their search history.**
+6. **Follow and unfollow users.**
+7. **Add and delete posts and comments.**
+8. **Enable location with each post.**
+9.  **Allow users to like and react with emojis on each post and comment.**
+10.  **Receive notifications for each new activity that is related to each user.**
+11. **Infinite scroll to fetch more data as you keep scrolling down the news feed.**
+12. **Real-time chat without the need to reload the web page or download any external software such as a messenger.**
+13. **Display the status of each user such as green for online status, grey for away status, and red for offline status.**
+14. **An option that allows users to have an instant pop-up message on their screen when they receive a chat message.**
+15. **Ability to report posts and profiles and specifying the reason of reporting.**
+16. **Functionality to promote Ordinary Users to Trendy Users, and Ordinary posts to Trendy posts.**
+17. **Ability to upload and crop images and videos when posting.**
+18. **Ability to add keywords to posts to further personalize it.**
+19. **A special advanced search feature, to search posts based on number of likes/dislikes, keywords, and/or usernames.**
+20. **1-to-1 messaging with other registered users in the application.**
+21. **Ability to tip posts with a specified amount of money.**
+22. **Ability to deposit/withdraw money into your account.**
+23. **A warnings tab within the navigation bar to view the number of warnings, reports, and disputes that must be attended to.**
+24. **Comprehensive functionality for disputing reports and warnings.**
+25. **Fisher-Yates Algorithm to recommend possible users to connect with.**
+26. **Blurring the post until they click the read button.**
+27. **The like/dislike/report post/read button shows list of users who did that action.**
+28. **CU is allowed to post ads and job applications that other users can click and apply, CU will pay the system (SU) by $0.1 for each click and application.**
+29. **ll users can search for messages based on author, keywords, with/without images and or videos, #of likes/dislikes.**
+30. **Any user receiving warning can dispute with the SU: if winning the dispute the warning is removed: if the warning is initialized by another user, the user who reported complained will be warned once; if the warning is by a surfer, the complained user is rewarded by 3 likes from the SU. Any CU/OU with 3 outstanding warnings will be given the choice of paying out the fine to remove the complaints or removed from the system. Any TU with 3 outstanding warnings will be demoted to OU with no warnings.**
+31. **TU/OU can post messages with <=20 words (an image is equivalent to 10 words, while a video is equivalent to 15 words) for free, any message >20 words will be billed by the system automatically with the amount (# - 20)*$0. 1; a CU's message is billed #*$1 without free ones. If the user does not have enough money in the account, a warning is issued and when the user logging will be automatically directed to the payment page.**
+32. **AI features to be added here! Work in progress!**
 
 
 <p align="right"><a href="#readme-top">Back to top</a></p>
 
 ### Built With
 
+[![HuggingFace][HuggingFace]][HuggingFace-url]
 [![Figma][Figma]][Figma-url]
 [![Postman][Postman]][Postman-url]
 [![MongoDB][MongoDB]][MongoDB-url]
@@ -220,27 +222,27 @@ Hello everyone!!
 
    ***3. Please put your own sendGrid_api. You can obtain one by creating an account [here](https://sendgrid.com/en-us).***
 
-   ***4. Please put your own your_cludinary_cloud_name. You can obtain them by creating an account [here](https://cloudinary.com/).***
+   ***4. Please put your own your_cloudinary_cloud_name. You can obtain them by creating an account [here](https://cloudinary.com/).***
    
    ```js
     MONGO_URI=your_online_MONGO_URI
     jwtSecret=here_have_a_random_secret_code
     sendGrid_api=api_key_get_it_from_sendgrid
-    CLOUDINARY_CLOUD_NAME=your_cludinary_cloud_name
+    CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
     ```
 
 6. Create a next.config.js file inside the socialpulse2 directory
 
    ***Note:***
 
-   ***1. Please put your own your_cludinary_cloud_name and your own your_upload_preset. You can obtain them by creating an account [here](https://cloudinary.com/).***
+   ***1. Please put your own your_cloudinary_cloud_name and your own your_upload_preset. You can obtain them by creating an account [here](https://cloudinary.com/).***
 
     ```js
     module.exports = {
       env: {
-        CLOUDINARY_URL: "https://api.cloudinary.com/v1_1/your_cludinary_cloud_name/image/upload",
-        CLOUDINARY_URL_VID: "https://api.cloudinary.com/v1_1/your_cludinary_cloud_name/video/upload",
-        CLOUDINARY_CLOUD_NAME: "your_cludinary_cloud_name",
+        CLOUDINARY_URL: "https://api.cloudinary.com/v1_1/your_cloudinary_cloud_name/image/upload",
+        CLOUDINARY_URL_VID: "https://api.cloudinary.com/v1_1/your_cloudinary_cloud_name/video/upload",
+        CLOUDINARY_CLOUD_NAME: "your_cloudinary_cloud_name",
         CLOUDINARY_UPLOAD_PRESET: "your_upload_preset",
       },
     };
@@ -256,7 +258,7 @@ Hello everyone!!
 
 ## Usage
 
-To try the SocialPulse2 application click on this [link](https://socialpulse-9a2adcafece8.herokuapp.com/)!
+To try the SocialPulse2 application click on this [link](https://socialpulse2-734cc2ffad19.herokuapp.com)!
 
 You can use the following two accounts to test the application in case that you do not want to register:
 
@@ -358,6 +360,9 @@ Project Link: [https://github.com/GeorgiosIoannouCoder/socialpulse2](https://git
 
 [github-shield]: https://img.shields.io/badge/-GitHub-black.svg?style=for-the-badge&logo=github&colorB=000
 [github-url]: https://github.com/GeorgiosIoannouCoder/
+
+[HuggingFace]: https://img.shields.io/badge/%F0%9F%A4%97-Hugging%20Face-yellow
+[HuggingFace-url]: https://huggingface.co/
 
 [Figma]: https://img.shields.io/badge/figma-a259ff?style=for-the-badge&logo=figma&logoColor=1abcfe
 [Figma-url]: https://www.figma.com/

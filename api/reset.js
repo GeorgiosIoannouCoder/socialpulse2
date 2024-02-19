@@ -14,7 +14,10 @@ const options = {
 };
 
 const transporter = nodemailer.createTransport(sendGridTransport(options));
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.sendGrid_api);
 
+// Send the reset password email.
 router.post("/", async (req, res) => {
   try {
     const { email } = req.body;
@@ -41,14 +44,22 @@ router.post("/", async (req, res) => {
     const mailOptions = {
       to: user.email,
       from: "gioanno000@citymail.cuny.edu",
-      subject: "Password reset request for SocialPulse account!",
+      subject: "Password reset request for SocialPulse2 account!",
       html: `<p>Hey ${user.name
         .split(" ")[0]
-        .toString()}, There was a request for password reset for your SocialPulse account!. <a href=${href}>Click this link to reset the password </a>   </p>
-      <p>This token is valid for only 10 minutes. If this email is not relevant to you please disregard it.</p></br><p>Thank you very much!</p>`,
+        .toString()}, There was a request for password reset for your SocialPulse2 account!. <a href=${href}>Click this link to reset the password </a>   </p>
+      <p>This token is only valid for 10 minutes. If this email is not relevant to you please disregard it.</p></br><p>Thank you very much!</p>`,
     };
 
     transporter.sendMail(mailOptions, (err, info) => err && console.log(err));
+    sgMail
+      .send(mailOptions)
+      .then(() => {
+        console.log("Email sent!");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     return res.status(200).send("Email sent successfully!");
   } catch (error) {
@@ -57,6 +68,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Verify the token and reset the password.
 router.post("/token", async (req, res) => {
   try {
     const { token, password } = req.body;
@@ -65,8 +77,41 @@ router.post("/token", async (req, res) => {
       return res.status(401).send("Unauthorized!");
     }
 
-    if (password.length < 6)
-      return res.status(401).send("Password must be at least 6 characters!");
+    // if (password.length < 6)
+    //   return res.status(401).send("Password must be at least 6 characters!");
+
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{4,}$/;
+
+    if (!passwordRegex.test(password)) {
+      if (password.length < 4) {
+        let errorMessage = "Password must be at minimum four characters!";
+        return res.status(401).send(errorMessage);
+      }
+
+      if (!/(?=.*[a-z])/.test(password)) {
+        let errorMessage =
+          "Password must contain at least one lowercase letter!";
+        return res.status(401).send(errorMessage);
+      }
+
+      if (!/(?=.*[A-Z])/.test(password)) {
+        let errorMessage =
+          "Password must contain at least one uppercase letter!";
+        return res.status(401).send(errorMessage);
+      }
+
+      if (!/(?=.*\d)/.test(password)) {
+        let errorMessage = "Password must contain at least one number!";
+        return res.status(401).send(errorMessage);
+      }
+
+      if (!/(?=.*[@$!%*?&])/.test(password)) {
+        let errorMessage =
+          "Password must contain at least one special character!";
+        return res.status(401).send(errorMessage);
+      }
+    }
 
     const user = await UserModel.findOne({ resetToken: token });
 
@@ -75,7 +120,7 @@ router.post("/token", async (req, res) => {
     }
 
     if (Date.now() > user.expireToken) {
-      return res.status(401).send("Token expired. Generate new one!");
+      return res.status(401).send("Token expired. Generate new token!");
     }
 
     user.password = await bcrypt.hash(password, 10);
@@ -85,7 +130,7 @@ router.post("/token", async (req, res) => {
 
     await user.save();
 
-    return res.status(200).send("Password updated!");
+    return res.status(200).send("Password updated successfully!");
   } catch (error) {
     console.error(error);
     return res.status(500).send("Server Error!");

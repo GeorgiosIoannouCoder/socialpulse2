@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Button,
@@ -10,6 +10,7 @@ import {
 } from "semantic-ui-react";
 import uploadPic from "../../utils/uploadPicToCloudinary";
 import uploadVid from "../../utils/uploadVidToCloudinary";
+import uploadAudio from "../../utils/uploadAudioToCloudinary";
 import { submitNewPost } from "../../utils/postActions";
 import CropImageModal from "./CropImageModal";
 import keywordss from "../../utils/keyWords";
@@ -26,6 +27,7 @@ function CreatePost({ user, setPosts }) {
   const [error, setError] = useState(null);
   const [highlighted, setHighlighted] = useState(false);
   const [media, setMedia] = useState(null);
+  const audioBlobRef = useRef(null);
   const [mediaPreview, setMediaPreview] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const handleChange = (e) => {
@@ -39,6 +41,68 @@ function CreatePost({ user, setPosts }) {
     setNewPost((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ------------------- stuff for recording users audio -------------------
+  // instantiating variables
+  const [permission, setPermission] = useState(false);
+  const mediaRecorder = useRef(null);
+  const [recordingStatus, setRecordingStatus] = useState("inactive");
+  const [stream, setStream] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [audio, setAudio] = useState(null);
+  const mimeType = "audio/webm";
+
+  // getting the microphone permission from the user
+  const getMicrophonePermission = async () => {
+    if ("MediaRecorder" in window) {
+      try {
+        const streamData = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
+        });
+        setPermission(true);
+        setStream(streamData);
+      } catch (err) {
+        alert(err.message);
+      }
+    } else {
+      alert("The MediaRecorder API is not supported in your browser.");
+    }
+  };
+
+  // starting the recording
+  const startRecording = async () => {
+    setRecordingStatus("recording");
+    //create new Media recorder instance using the stream
+    const media2 = new MediaRecorder(stream, { type: mimeType });
+    //set the MediaRecorder instance to the mediaRecorder ref
+    mediaRecorder.current = media2;
+    //invokes the start method to start the recording process
+    mediaRecorder.current.start();
+    let localAudioChunks = [];
+    mediaRecorder.current.ondataavailable = (event) => {
+      if (typeof event.data === "undefined") return;
+      if (event.data.size === 0) return;
+      localAudioChunks.push(event.data);
+    };
+    setAudioChunks(localAudioChunks);
+  };
+
+  // stopping the recording
+  const stopRecording = () => {
+    setRecordingStatus("inactive");
+    //stops the recording instance
+    mediaRecorder.current.stop();
+    mediaRecorder.current.onstop = () => {
+      //creates a blob file from the audiochunks data
+      const audioBlob = new Blob(audioChunks, { type: mimeType });
+      audioBlobRef.current = audioBlob;
+      //creates a playable URL from the blob file.
+      const audioURL = URL.createObjectURL(audioBlob);
+      setAudio(audioURL);
+      setAudioChunks([]);
+    };
+  };
+  //--------------------------------------------------------------------------------------
   const addStyles = () => ({
     textAlign: "center",
     height: "150px",
@@ -64,6 +128,7 @@ function CreatePost({ user, setPosts }) {
           }
         } else if (media.type.startsWith("video/")) {
           picUrl = await uploadVid(media);
+          console.log("video url: ", picUrl);
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Video!");
@@ -82,6 +147,21 @@ function CreatePost({ user, setPosts }) {
           return setError("Error Uploading Video!");
         }
       }
+    }
+
+    // uploading the audio to cloudinary when user posts
+    if(audioBlobRef.current != null) {
+      const audioUploadUrl = await uploadAudio(audioBlobRef.current);
+      if (!audioUploadUrl) {
+        return setError("Error Uploading Audio!");
+      }
+      let { pipeline, env } = await import('@xenova/transformers');
+      env.allowLocalModels = false;
+      env.useBrowserCache = false;
+  
+      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+      const output = await transcriber(audioUploadUrl);
+      console.log("Output: ", output)
     }
 
     await submitNewPost(
@@ -159,7 +239,67 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
+        <div className="audio-controls">
+          {!permission ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={getMicrophonePermission}
+              type="button"
+            >
+              Get Microphone
+            </Button>
+          ) : null}
+          {permission && recordingStatus === "inactive" ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={startRecording}
+              type="button"
+            >
+              Start Recording
+            </Button>
+          ) : null}
+          {recordingStatus === "recording" ? (
+            <Button
+              style={{
+                padding: "1em",
+                marginLeft: "2em",
+                marginBottom: "2em",
+                marginTop: "0em",
+              }}
+              onClick={stopRecording}
+              type="button"
+            >
+              Stop Recording
+            </Button>
+          ) : null}
+        </div>
+        {audio ? (
+          <div
+            style={{
+              display: "inline-block",
+              float: "right",
+              marginRight: "5em",
+              marginBottom: "-10em",
+              position: 'relative', 
+              top: '-71px',
+            }}
+            className="audio-container"
+          >
+            <audio src={audio} controls></audio>
+          </div>
+        ) : null}
 
+        {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
           <Dropdown
