@@ -1,7 +1,7 @@
 {
-  "name": "socialpulse",
+  "name": "socialpulse2",
   "version": "1.0.0",
-  "description": "SocialPulse is a Social Media Platform with main purpose to Connect people around the globe. SocialPulse is a social media platform where people can communicate with each other in real-time, create and share posts, and create networks such as group chats with each other.",
+  "description": "SocialPulse2 is an AI multimodal Social Media Platform with main purpose to Connect people around the globe. SocialPulse is a social media platform where people can communicate with each other in real-time, create and share posts, and create networks such as group chats with each other.",
   "engines": {
     "node": "16.15.0"
   },
@@ -11,7 +11,7 @@
     "build": "next build",
     "start": "NODE_ENV=production node server.js"
   },
-  "author": "socialpulse-Georgios_Ioannou-Christian_Rasmussen-Leon_Belegu-Selma_Doganata-Jolie_Huang",
+  "author": "socialpulse2-Georgios_Ioannou-Christian_Rasmussen-Leon_Belegu-Selma_Doganata-Jolie_Huang",
   "license": "ISC",
   "dependencies": {
     "@artsy/fresnel": "^1.2.2",
