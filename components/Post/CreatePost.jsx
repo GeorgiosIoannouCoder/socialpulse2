@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-
 import {
   Form,
   Button,
@@ -104,7 +103,6 @@ function CreatePost({ user, setPosts }) {
     };
   };
   //--------------------------------------------------------------------------------------
-
   const addStyles = () => ({
     textAlign: "center",
     height: "150px",
@@ -241,8 +239,6 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
-
-        {/* adding the button for get access to the mic and recording/stoping the recording */}
         <div className="audio-controls">
           {!permission ? (
             <Button
