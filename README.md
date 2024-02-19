@@ -12,11 +12,11 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![GitHub][github-shield]][github-url]
 
-# [SocialPulse2](https://socialpulse-9a2adcafece8.herokuapp.com/) | Social Media Platform
+# [SocialPulse2](https://socialpulse2-734cc2ffad19.herokuapp.com) | Social Media Platform
 
 <br />
 <div align="center">
-  <a href="https://socialpulse-9a2adcafece8.herokuapp.com/">
+  <a href="https://socialpulse2-734cc2ffad19.herokuapp.com">
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
@@ -28,7 +28,7 @@
     <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://socialpulse-9a2adcafece8.herokuapp.com/">View Web Application</a>
+    <a href="https://socialpulse2-734cc2ffad19.herokuapp.com">View Web Application</a>
     ·
     <a href="https://github.com/GeorgiosIoannouCoder/socialpulse2/issues">Report Bug</a>
     ·
@@ -64,7 +64,7 @@
 
 ## About The Project
 
-<a href="https://socialpulse-9a2adcafece8.herokuapp.com/">
+<a href="https://socialpulse2-734cc2ffad19.herokuapp.com">
     <img src="logo.png" alt="Logo" width="200" height="200">
   </a>
 
@@ -256,7 +256,7 @@
 
 ## Usage
 
-To try the SocialPulse2 application click on this [link](https://socialpulse-9a2adcafece8.herokuapp.com/)!
+To try the SocialPulse2 application click on this [link](https://socialpulse2-734cc2ffad19.herokuapp.com)!
 
 You can use the following two accounts to test the application in case that you do not want to register:
 
