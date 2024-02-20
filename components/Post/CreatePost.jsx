@@ -41,17 +41,18 @@ function CreatePost({ user, setPosts }) {
     setNewPost((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ------------------- stuff for recording users audio -------------------
-  // instantiating variables
+  // ------------------- Variables for recording users audio -------------------
+  // Instantiating variables.
   const [permission, setPermission] = useState(false);
-  const mediaRecorder = useRef(null);
   const [recordingStatus, setRecordingStatus] = useState("inactive");
   const [stream, setStream] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
   const [audio, setAudio] = useState(null);
+  const mediaRecorder = useRef(null);
+
   const mimeType = "audio/webm";
 
-  // getting the microphone permission from the user
+  // Getting the microphone permission from the user.
   const getMicrophonePermission = async () => {
     if ("MediaRecorder" in window) {
       try {
@@ -69,14 +70,14 @@ function CreatePost({ user, setPosts }) {
     }
   };
 
-  // starting the recording
+  // Starting the recording.
   const startRecording = async () => {
     setRecordingStatus("recording");
-    //create new Media recorder instance using the stream
+    // Create new Media recorder instance using the stream.
     const media2 = new MediaRecorder(stream, { type: mimeType });
-    //set the MediaRecorder instance to the mediaRecorder ref
+    // Set the MediaRecorder instance to the mediaRecorder ref.
     mediaRecorder.current = media2;
-    //invokes the start method to start the recording process
+    // Invokes the start method to start the recording process.
     mediaRecorder.current.start();
     let localAudioChunks = [];
     mediaRecorder.current.ondataavailable = (event) => {
@@ -87,22 +88,28 @@ function CreatePost({ user, setPosts }) {
     setAudioChunks(localAudioChunks);
   };
 
-  // stopping the recording
+  // Stopping the recording.
   const stopRecording = () => {
     setRecordingStatus("inactive");
-    //stops the recording instance
+
+    // Stops the recording instance.
     mediaRecorder.current.stop();
+
     mediaRecorder.current.onstop = () => {
-      //creates a blob file from the audiochunks data
+      // Creates a blob file from the audiochunks data.
       const audioBlob = new Blob(audioChunks, { type: mimeType });
+
       audioBlobRef.current = audioBlob;
-      //creates a playable URL from the blob file.
+
+      // Creates a playable URL from the blob file.
       const audioURL = URL.createObjectURL(audioBlob);
+
       setAudio(audioURL);
+
       setAudioChunks([]);
     };
   };
-  //--------------------------------------------------------------------------------------
+
   const addStyles = () => ({
     textAlign: "center",
     height: "150px",
@@ -122,13 +129,16 @@ function CreatePost({ user, setPosts }) {
       if (typeof media === "object" && media.type) {
         if (media.type.startsWith("image/")) {
           picUrl = await uploadPic(media);
+
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Image!");
           }
         } else if (media.type.startsWith("video/")) {
           picUrl = await uploadVid(media);
-          console.log("video url: ", picUrl);
+
+          // console.log("video url: ", picUrl);
+
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Video!");
@@ -136,12 +146,14 @@ function CreatePost({ user, setPosts }) {
         }
       } else if (typeof media === "string" && media.startsWith("data:image/")) {
         picUrl = await uploadPic(media);
+
         if (!picUrl) {
           setLoading(false);
           return setError("Error Uploading Image!");
         }
       } else if (typeof media === "string" && media.startsWith("data:video/")) {
         picUrl = await uploadVid(media);
+
         if (!picUrl) {
           setLoading(false);
           return setError("Error Uploading Video!");
@@ -149,19 +161,32 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // uploading the audio to cloudinary when user posts
-    if(audioBlobRef.current != null) {
+    // Uploading the audio to cloudinary when user posts.
+    // Automatic Speech Recognition.
+    if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
+
       if (!audioUploadUrl) {
         return setError("Error Uploading Audio!");
       }
-      let { pipeline, env } = await import('@xenova/transformers');
-      env.allowLocalModels = false;
-      env.useBrowserCache = false;
-  
-      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
-      const output = await transcriber(audioUploadUrl);
-      console.log("Output: ", output)
+
+      try {
+        let { pipeline, env } = await import("@xenova/transformers");
+
+        env.allowLocalModels = false;
+        env.useBrowserCache = false;
+
+        const transcriber = await pipeline(
+          "automatic-speech-recognition",
+          "Xenova/whisper-tiny.en"
+        );
+
+        const output = await transcriber(audioUploadUrl);
+
+        console.log("Output: ", output);
+      } catch (error) {
+        return setError("Error Transcribing Audio!");
+      }
     }
 
     await submitNewPost(
@@ -290,8 +315,8 @@ function CreatePost({ user, setPosts }) {
               float: "right",
               marginRight: "5em",
               marginBottom: "-10em",
-              position: 'relative', 
-              top: '-71px',
+              position: "relative",
+              top: "-71px",
             }}
             className="audio-container"
           >
