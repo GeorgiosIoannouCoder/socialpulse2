@@ -14,8 +14,6 @@
 
 # [SocialPulse2](https://socialpulse2-734cc2ffad19.herokuapp.com) | Social Media Platform
 
-Hello everyone!!
-
 <br />
 <div align="center">
   <a href="https://socialpulse2-734cc2ffad19.herokuapp.com">
