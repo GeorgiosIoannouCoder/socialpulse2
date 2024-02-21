@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import Progress from '../../ml_components/Progress'
+import ProgressSentiment from "../../mlComponents/sentiment/ProgressSentiment";
+import ProgressTranslator from "../../mlComponents/translator/ProgressTranslator";
+import LanguageSelectorTranslator from "../../mlComponents/translator/LanguageSelectorTranslator";
 import {
   Card,
   Icon,
@@ -13,10 +15,12 @@ import {
   Modal,
   Label,
   Form,
+  FormGroup,
   TextArea,
-  Grid,
   Message,
   Embed,
+  MessageHeader,
+  MessageContent,
 } from "semantic-ui-react";
 import PostComments from "./PostComments";
 import CommentInputField from "./CommentInputField";
@@ -36,27 +40,53 @@ import ReadsList from "./ReadsList";
 import ImageModal from "./ImageModal";
 import NoImageModal from "./NoImageModal";
 
+const lngDetector = new (require("languagedetect"))();
+
 function CardPost({ post, user, setPosts, setShowToastr }) {
+  const [reads, setReads] = useState(post.reads);
+  const hasRead =
+    post.reads.some((read) => read.user.toString() === user._id) ||
+    post.user._id.toString() === user._id;
+  const [isRead, setIsRead] = useState(hasRead);
   const [likes, setLikes] = useState(post.likes);
   const [dislikes, setDisLikes] = useState(post.dislikes);
-  const [reads, setReads] = useState(post.reads);
-  const hasRead = post.reads.some((read) => read.user.toString() === user._id);
-  const [isRead, setIsRead] = useState(hasRead);
-  const [tip, setTip] = useState(1);
-
-  const isLiked =
-    likes.length > 0 &&
-    likes.filter((like) => like.user === user._id).length > 0;
-  const isDisLiked =
-    dislikes.length > 0 &&
-    dislikes.filter((dislike) => dislike.user === user._id).length > 0;
-
   const [comments, setComments] = useState(post.comments);
+  const [tip, setTip] = useState(1);
   const [reports, setReports] = useState(post.reports);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showFullText, setShowFullText] = useState(false);
+  const [resultSentiment, setResultSentiment] = useState(null);
+  const [readySentiment, setReadySentiment] = useState(null);
+  const [disabledSentiment, setDisabledSentiment] = useState(false);
+  const [progressItemsSentiment, setProgressItemsSentiment] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [openReport, setOpenReport] = useState(false);
+  const [tipModal, setTipModal] = useState(false);
+  const [translateModal, setTranslateModal] = useState(false);
+  const [readyTranslator, setReadyTranslator] = useState(null);
+  const [disabledTranslator, setDisabledTranslator] = useState(false);
+  const [progressItemsTranslator, setProgressItemsTranslator] = useState([]);
+  const [inputTranslator, setInputTranslator] = useState(post.text);
+  const [sourceLanguageTranslator, setSourceLanguageTranslator] =
+    useState("eng_Latn");
+  const [targetLanguageTranslator, setTargetLanguageTranslator] =
+    useState("ell_Grek");
+  const [preferredLanguage, setPreferredLanguage] = useState("");
+  const [postLanguage, setPostLanguage] = useState("");
+  const [outputTranslator, setOutputTranslator] = useState("");
+  const workerSentiment = useRef(null);
+  const workerTranslator = useRef(null);
+
+  const isLiked =
+    likes.length > 0 &&
+    likes.filter((like) => like.user === user._id).length > 0;
+
+  const isDisLiked =
+    dislikes.length > 0 &&
+    dislikes.filter((dislike) => dislike.user === user._id).length > 0;
+
   const addPropsToModal = () => ({
     post,
     user,
@@ -76,28 +106,55 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
     setReports,
   });
 
-  const [openReport, setOpenReport] = useState(false);
-
-  // function to handle when a user clicks the "Read" button
+  // Function to handle when a user clicks the "Read" button.
   const readPostOnClick = () => {
     setShowFullText(!showFullText);
     readPost(post._id, user._id, setReads);
     setIsRead(true);
   };
 
-  const [open2, setOpen2] = useState(false);
+  const handleDropdownChangeSourceLanguageTranslator = async (e, { value }) => {
+    // Update the state with the selected value.
+    setSourceLanguageTranslator(value);
+  };
 
-  // creating variables for the different tip options
+  const handleDropdownChangeTargetLanguageTranslator = async (e, { value }) => {
+    // Update the state with the selected value.
+    setTargetLanguageTranslator(value);
+  };
+
+  const handleDropdownChangeTip = async (e, { value }) => {
+    // Update the state with the selected value.
+    setTip(value);
+    await tipPost(post, user, value);
+  };
+
+  // Creating variables for the different tip options.
   const tipTypeOptions = [
     { key: "One", text: "$1", value: 1 },
     { key: "Five", text: "$5", value: 5 },
     { key: "Ten", text: "$10", value: 10 },
   ];
 
-  const handleDropdownChangeTip = async (e, { value }) => {
-    // Update the state with the selected value.
-    setTip(value);
-    await tipPost(post, user, value);
+  const getPostLanguage = () => {
+    const languageDetected = lngDetector.detect(post.text, 1);
+    const language =
+      languageDetected.length === 1 ? languageDetected[0][0] : languageDetected;
+
+    setPostLanguage(language);
+  };
+
+  const getPreferredLanguage = () => {
+    const language = window.navigator.language
+      ? window.navigator.language.split("-")[0]
+      : "en";
+
+    setPreferredLanguage(language);
+  };
+
+  const getLanguages = () => {
+    getPostLanguage();
+    getPreferredLanguage();
   };
 
   const handleSubmit = async (e) => {
@@ -120,62 +177,153 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
     isvideo = post.picUrl.endsWith(".mp4");
   }
 
-  const [showFullText, setShowFullText] = useState(false);
-
-  const [result, setResult] = useState(null);
-  const [ready, setReady] = useState(null);
-
-  const [output, setOutput] = useState('');
-
-  // Create a reference to the worker object.
-  const worker = useRef(null);
-
-  
-
-
-  // We use the `useEffect` hook to setup the worker as soon as the `App` component is mounted.
+  // We use the `useEffect` hook to setup the workerSentiment as soon as the `App` component is mounted.
   useEffect(() => {
-    if (!worker.current) {
-      // Create the worker if it does not yet exist.
-      worker.current = new Worker(new URL('../../ml_components/worker.js', import.meta.url), {
-          type: 'module'
-      });
+    if (!workerSentiment.current) {
+      // Create the workerSentiment if it does not yet exist.
+      workerSentiment.current = new Worker(
+        new URL(
+          "../../mlComponents/sentiment/workerSentiment.js",
+          import.meta.url
+        ),
+        {
+          type: "module",
+        }
+      );
     }
 
-    // Create a callback function for messages from the worker thread.
+    // Create a callback function for messages from the workerSentiment thread.
     const onMessageReceived = (e) => {
       switch (e.data.status) {
-        case 'initiate':
-          setReady(false);
+        case "initiate":
+          setReadySentiment(false);
+          setProgressItemsSentiment((prev) => [...prev, e.data]);
           break;
-        case 'ready':
-          setReady(true);
+        case "progress":
+          // Model file progress: update one of the progress items.
+          setProgressItemsSentiment((prev) =>
+            prev.map((item) => {
+              if (item.file === e.data.file) {
+                return { ...item, progress: e.data.progress };
+              }
+              return item;
+            })
+          );
           break;
-        case 'complete':
-          setResult(e.data.output[0])
+        case "done":
+          // Model file loaded: remove the progress item from the list.
+          setProgressItemsSentiment((prev) =>
+            prev.filter((item) => item.file !== e.data.file)
+          );
+          break;
+        case "ready":
+          setReadySentiment(true);
+          break;
+        case "complete":
+          setResultSentiment(e.data.output[0]);
+          setDisabledSentiment(false);
           break;
       }
     };
 
     // Attach the callback function as an event listener.
-    worker.current.addEventListener('message', onMessageReceived);
+    workerSentiment.current.addEventListener("message", onMessageReceived);
 
     // Define a cleanup function for when the component is unmounted.
-    return () => worker.current.removeEventListener('message', onMessageReceived);
+    return () =>
+      workerSentiment.current.removeEventListener("message", onMessageReceived);
   });
 
-
   const classify = useCallback((text) => {
-    if (worker.current) {
-      worker.current.postMessage({ text });
+    setDisabledSentiment(true);
+    if (workerSentiment.current) {
+      workerSentiment.current.postMessage({ text });
     }
   }, []);
 
-
-  const handleButtonClick = () => {
-    classify(post.text)
+  const sentimentAnalysisClick = () => {
+    classify(post.text);
   };
 
+  // We use the `useEffect` hook to setup the workerTranslator as soon as the `App` component is mounted.
+  useEffect(() => {
+    if (!workerTranslator.current) {
+      // Create the worker if it does not yet exist.
+      workerTranslator.current = new Worker(
+        new URL(
+          "../../mlComponents/translator/workerTranslator.js",
+          import.meta.url
+        ),
+        {
+          type: "module",
+        }
+      );
+    }
+
+    // Create a callback function for messages from the workerTranslator thread.
+    const onMessageReceived = (e) => {
+      switch (e.data.status) {
+        case "initiate":
+          // Model file start load: add a new progress item to the list.
+          setReadyTranslator(false);
+          setProgressItemsTranslator((prev) => [...prev, e.data]);
+          break;
+
+        case "progress":
+          // Model file progress: update one of the progress items.
+          setProgressItemsTranslator((prev) =>
+            prev.map((item) => {
+              if (item.file === e.data.file) {
+                return { ...item, progress: e.data.progress };
+              }
+              return item;
+            })
+          );
+          break;
+
+        case "done":
+          // Model file loaded: remove the progress item from the list.
+          setProgressItemsTranslator((prev) =>
+            prev.filter((item) => item.file !== e.data.file)
+          );
+          break;
+
+        case "ready":
+          // Pipeline ready: the workerTranslator is ready to accept messages.
+          setReadyTranslator(true);
+          break;
+
+        case "update":
+          // Generation update: update the output text.
+          setOutputTranslator(e.data.output);
+          break;
+
+        case "complete":
+          // Generation complete: re-enable the "Translate" button.
+          setDisabledTranslator(false);
+          break;
+      }
+    };
+
+    // Attach the callback function as an event listener.
+    workerTranslator.current.addEventListener("message", onMessageReceived);
+
+    // Define a cleanup function for when the component is unmounted.
+    return () =>
+      workerTranslator.current.removeEventListener(
+        "message",
+        onMessageReceived
+      );
+  });
+
+  const translate = () => {
+    setDisabledTranslator(true);
+    workerTranslator.current.postMessage({
+      text: inputTranslator,
+      src_lang: sourceLanguageTranslator,
+      tgt_lang: targetLanguageTranslator,
+    });
+  };
 
   return (
     <>
@@ -289,18 +437,152 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               {post.text}
             </Card.Description>
 
-            <button onClick={handleButtonClick}>Analyze</button>
-
-            {ready !== null && (
+            {readySentiment !== null && (
               <pre className="bg-gray-100 p-2 rounded">
-              { (!ready || !result) ? 'Loading...' : JSON.stringify(result, null, 2) }
+                {!readySentiment || !resultSentiment ? (
+                  <>
+                    <Message icon size="mini" color="black">
+                      <Icon name="circle notched" color="blue" loading />
+                      <MessageContent>
+                        <MessageHeader>Just one second</MessageHeader>
+                        We are analyzing that content for you.
+                      </MessageContent>
+                    </Message>
+                    {progressItemsSentiment.map((data) => (
+                      <div key={data.file}>
+                        <ProgressSentiment
+                          text={data.file}
+                          percentage={data.progress}
+                        />
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  JSON.stringify(resultSentiment, null, 2)
+                )}
               </pre>
             )}
 
             <Button
               as="div"
               labelPosition="right"
-              style={{ marginTop: "20px" }}
+              floated="left"
+              style={{ marginTop: "5px" }}
+              size="tiny"
+              disabled={disabledSentiment}
+              onClick={sentimentAnalysisClick}
+            >
+              <Icon name="binoculars" size="large" color="black" fitted />
+            </Button>
+
+            <Modal
+              closeIcon
+              open={translateModal}
+              trigger={
+                <Button
+                  as="div"
+                  labelPosition="right"
+                  floated="left"
+                  style={{ marginTop: "5px" }}
+                  size="tiny"
+                  onClick={getLanguages}
+                >
+                  <Icon name="translate" size="large" color="blue" fitted />
+                </Button>
+              }
+              onClose={() => setTranslateModal(false)}
+              onOpen={() => setTranslateModal(true)}
+            >
+              <Header icon="translate" content="Translate Post" />
+              <Modal.Content>
+                <Message size="mini" color="orange">
+                  Post language:{" "}
+                  {postLanguage.length === 0
+                    ? "No language detected"
+                    : postLanguage.charAt(0).toUpperCase() +
+                      postLanguage.slice(1)}
+                </Message>
+
+                <Message size="mini" color="orange">
+                  Preferred language: {preferredLanguage.toUpperCase()}
+                </Message>
+                <Form>
+                  <FormGroup widths="equal">
+                    <LanguageSelectorTranslator
+                      type={"Source"}
+                      defaultLanguage={"eng_Latn"}
+                      onChange={handleDropdownChangeSourceLanguageTranslator}
+                    />
+                    <LanguageSelectorTranslator
+                      type={"Target"}
+                      defaultLanguage={"ell_Grek"}
+                      onChange={handleDropdownChangeTargetLanguageTranslator}
+                    />
+                  </FormGroup>
+                </Form>
+                <Form>
+                  <FormGroup widths="equal">
+                    <TextArea
+                      value={inputTranslator}
+                      rows={3}
+                      onChange={(e) => setInputTranslator(e.target.value)}
+                      style={{
+                        marginTop: -10,
+                        marginLeft: 7,
+                        marginRight: 10,
+                      }}
+                      readOnly
+                    />
+                    <TextArea
+                      placeholder="Translated Text..."
+                      value={outputTranslator}
+                      rows={3}
+                      style={{ marginTop: -10, marginLeft: 1, marginRight: 5 }}
+                      readOnly
+                    />
+                  </FormGroup>
+                </Form>
+
+                <div className="progress-bars-container">
+                  {readyTranslator === false && (
+                    <Message icon size="mini" color="black">
+                      <Icon name="circle notched" color="blue" loading />
+                      <MessageContent>
+                        <MessageHeader>Just one minute</MessageHeader>
+                        We are loading the models for you.
+                      </MessageContent>
+                    </Message>
+                  )}
+                  {progressItemsTranslator.map((data) => (
+                    <div key={data.file}>
+                      <ProgressTranslator
+                        text={data.file}
+                        percentage={data.progress}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Modal.Content>
+
+              <Modal.Actions>
+                <Button
+                  color="blue"
+                  disabled={disabledTranslator}
+                  onClick={translate}
+                >
+                  <Icon name="translate" style={{ cursor: "pointer" }} />{" "}
+                  Translate
+                </Button>
+                <Button color="red" onClick={() => setTranslateModal(false)}>
+                  <Icon name="remove" style={{ cursor: "pointer" }} /> Close
+                </Button>
+              </Modal.Actions>
+            </Modal>
+
+            <Button
+              as="div"
+              labelPosition="right"
+              style={{ marginTop: "30px" }}
               floated="right"
             >
               <Button color="black" onClick={readPostOnClick} disabled={isRead}>
@@ -548,7 +830,7 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               {/* clickable tip button */}
               <Modal
                 closeIcon
-                open={open2}
+                open={tipModal}
                 trigger={
                   <Button as="div" labelPosition="right">
                     <Button color="green">
@@ -560,8 +842,8 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                     </Button>
                   </Button>
                 }
-                onClose={() => setOpen2(false)}
-                onOpen={() => setOpen2(true)}
+                onClose={() => setTipModal(false)}
+                onOpen={() => setTipModal(true)}
               >
                 <Header icon="dollar sign" content="Tip Post" />
                 <Modal.Content>
@@ -571,6 +853,7 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                     defaultValue="one"
                     options={tipTypeOptions}
                     onChange={handleDropdownChangeTip}
+                    style={{ marginLeft: 5 }}
                     search
                     selection
                     clearable
@@ -579,10 +862,10 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
 
                 {/* bottom buttons of the pop-up */}
                 <Modal.Actions>
-                  <Button color="red" onClick={() => setOpen2(false)}>
+                  <Button color="red" onClick={() => setTipModal(false)}>
                     <Icon name="remove" style={{ cursor: "pointer" }} /> Cancel
                   </Button>
-                  <Button color="green" onClick={() => setOpen2(false)}>
+                  <Button color="green" onClick={() => setTipModal(false)}>
                     <Icon name="checkmark" style={{ cursor: "pointer" }} />{" "}
                     Submit
                   </Button>

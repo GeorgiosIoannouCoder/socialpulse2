@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Button,
+  ButtonContent,
   Image,
   Divider,
   Message,
@@ -165,7 +166,7 @@ function CreatePost({ user, setPosts }) {
     // Automatic Speech Recognition.
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
-
+      console.log(audioUploadUrl);
       if (!audioUploadUrl) {
         return setError("Error Uploading Audio!");
       }
@@ -267,28 +268,38 @@ function CreatePost({ user, setPosts }) {
         <div className="audio-controls">
           {!permission ? (
             <Button
-              style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
-              }}
+              animated="vertical"
               onClick={getMicrophonePermission}
-              type="button"
+              style={{
+                marginLeft: "30px",
+                marginBottom: "20px",
+                width: "115px",
+              }}
+              color="black"
             >
-              Get Microphone
+              <ButtonContent
+                hidden
+                style={{
+                  color: "#e5bf4d",
+                }}
+              >
+                Get Microphone
+              </ButtonContent>
+              <ButtonContent visible>
+                <Icon color="blue" name="microphone" />
+              </ButtonContent>
             </Button>
           ) : null}
           {permission && recordingStatus === "inactive" ? (
             <Button
               style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
+                marginLeft: "30px",
+                marginBottom: "20px",
+                width: "141px",
+                color: "#ff0000",
               }}
+              color="black"
               onClick={startRecording}
-              type="button"
             >
               Start Recording
             </Button>
@@ -296,13 +307,13 @@ function CreatePost({ user, setPosts }) {
           {recordingStatus === "recording" ? (
             <Button
               style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
+                marginLeft: "30px",
+                marginBottom: "20px",
+                width: "141px",
+                color: "#00ff00",
               }}
+              color="black"
               onClick={stopRecording}
-              type="button"
             >
               Stop Recording
             </Button>
@@ -313,10 +324,10 @@ function CreatePost({ user, setPosts }) {
             style={{
               display: "inline-block",
               float: "right",
-              marginRight: "5em",
-              marginBottom: "-10em",
+              marginRight: "65px",
+              marginBottom: "-100px",
               position: "relative",
-              top: "-71px",
+              top: "-60px",
             }}
             className="audio-container"
           >
@@ -377,6 +388,16 @@ function CreatePost({ user, setPosts }) {
               clearable
             />
           )}
+
+          <Form.Input
+            value={newPost.language}
+            name="language"
+            label="Add Language"
+            icon="language"
+            placeholder="Not used! Exp."
+            style={{ width: "145px", marginBottom: "10px" }}
+            required
+          />
           <input
             ref={inputRef}
             onChange={handleChange}

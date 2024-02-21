@@ -51,21 +51,22 @@ router.post("/", authMiddleware, async (req, res) => {
       return count;
     }
 
-    // function to replace taboowords with ****
     function censorTabooWords() {
-      //variable to be the new text
+      // Variable to be the new text
       let newText = "";
 
-      // variable to get all the words in the users text
-      let textWords = text.split(" ");
+      // Variable to get all the words in the users text
+      let textWords = text.split(/\s+/); // Use regex to split by any whitespace
 
-      // iterate through all textWords
+      // Iterate through all textWords
       for (let i = 0; i < textWords.length; i++) {
-        if (tabooWords.includes(textWords[i])) {
-          let lenOfTabooWord = textWords[i].length;
+        // Remove trailing punctuation marks
+        let word = textWords[i].replace(/[^\w\s]/gi, "");
+        if (tabooWords.includes(word)) {
+          let lenOfTabooWord = word.length;
           let stars = "";
 
-          // get the appropriate number of stars
+          // Get the appropriate number of stars
           for (let j = 0; j < lenOfTabooWord; j++) {
             stars += "*";
           }
@@ -78,10 +79,10 @@ router.post("/", authMiddleware, async (req, res) => {
       return newText;
     }
 
-    // variable to store the number of taboowords the user has
+    // Variable to store the number of taboowords the user has
     let taboowords = countTabooWords();
 
-    //checking the number of taboowords the user has
+    // Checking the number of taboowords the user has
     if (taboowords >= 3) {
       return res.status(401).send("Post cannot have more than 3 taboo words!");
     }
@@ -94,7 +95,7 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(401).send("Please select at least one keyword!");
     }
 
-    // replace text with the censored version
+    // Replace text with the censored version
     text = censorTabooWords();
 
     const newPost = {
@@ -118,38 +119,40 @@ router.post("/", authMiddleware, async (req, res) => {
       newPost.keywords = keywords[keywords.length - 1];
     }
 
-    // Charge 10 words per image.
-    if (picUrl) {
-      newPost.picUrl = picUrl;
-      wordCount += Number(10);
-    }
+    if (role !== "Super") {
+      // Charge 10 words per image.
+      if (picUrl) {
+        newPost.picUrl = picUrl;
+        wordCount += Number(10);
+      }
 
-    // Charge $1 per word with a video being 15 words and an image being 10 words.
-    if (role === "Corporate") {
-      user.accountBalance -= Number(wordCount);
-    } else {
-      const baseCharge = 20; // Number of free words before applying the charge
+      // Charge $1 per word with a video being 15 words and an image being 10 words.
+      if (role === "Corporate") {
+        user.accountBalance -= Number(wordCount);
+      } else {
+        const baseCharge = 20; // Number of free words before applying the charge
 
-      let chargeableWords = Math.max(0, wordCount - baseCharge);
+        let chargeableWords = Math.max(0, wordCount - baseCharge);
 
-      if (chargeableWords > 0) {
-        const chargePerWord = 0.1;
+        if (chargeableWords > 0) {
+          const chargePerWord = 0.1;
 
-        const chargeAmount = chargeableWords * chargePerWord;
+          const chargeAmount = chargeableWords * chargePerWord;
 
-        // If the user has enough accountBalance, deduct the chargeAmount
-        if (user.accountBalance >= chargeAmount) {
-          user.accountBalance -= chargeAmount;
-        } else {
-          // If not enough accountBalance, deduct the remaining from tips
-          const remainingCharge = chargeAmount - user.accountBalance;
-          user.accountBalance = 0;
-
-          if (user.tips >= remainingCharge) {
-            user.tips -= remainingCharge;
+          // If the user has enough accountBalance, deduct the chargeAmount
+          if (user.accountBalance >= chargeAmount) {
+            user.accountBalance -= chargeAmount;
           } else {
-            // If not enough tips, handle the situation (e.g., show an error)
-            console.error("Insufficient funds for the charge!");
+            // If not enough accountBalance, deduct the remaining from tips
+            const remainingCharge = chargeAmount - user.accountBalance;
+            user.accountBalance = 0;
+
+            if (user.tips >= remainingCharge) {
+              user.tips -= remainingCharge;
+            } else {
+              // If not enough tips, handle the situation (e.g., show an error)
+              console.error("Insufficient funds for the charge!");
+            }
           }
         }
       }
@@ -163,7 +166,8 @@ router.post("/", authMiddleware, async (req, res) => {
 
     return res.json(postCreated);
   } catch (error) {
-    return res.status(404).send("Insufficient funds to create this post!");
+    console.log(error);
+    return res.status(404).send("Oops! Pease try again!");
   }
 });
 
