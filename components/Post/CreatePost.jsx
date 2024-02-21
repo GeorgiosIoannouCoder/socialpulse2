@@ -166,7 +166,7 @@ function CreatePost({ user, setPosts }) {
     // Automatic Speech Recognition.
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
-      console.log(audioUploadUrl);
+
       if (!audioUploadUrl) {
         return setError("Error Uploading Audio!");
       }
@@ -184,7 +184,7 @@ function CreatePost({ user, setPosts }) {
 
         const output = await transcriber(audioUploadUrl);
 
-        console.log("Output: ", output);
+        console.log("Audio transcription output: ", output);
       } catch (error) {
         return setError("Error Transcribing Audio!");
       }
