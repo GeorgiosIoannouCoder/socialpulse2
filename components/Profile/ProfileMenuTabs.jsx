@@ -83,7 +83,7 @@ function ProfileMenuTabs({
 
           {!ownAccount && (
             <Menu.Item
-              name={`${followingLength} connecting`}
+              name={`${followingLength} following`}
               active={activeItem === "following"}
               onClick={() => handleItemClick("following")}
             />
