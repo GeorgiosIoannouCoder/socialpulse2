@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const UserModel = require("../models/UserModel");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
-const sendGridTransport = require("nodemailer-sendgrid-transport");
+// const nodemailer = require("nodemailer");
+// const sendGridTransport = require("nodemailer-sendgrid-transport");
 const crypto = require("crypto");
 const baseUrl = require("../utils/baseUrl");
 const isEmail = require("validator/lib/isEmail");
@@ -13,7 +13,7 @@ const options = {
   },
 };
 
-const transporter = nodemailer.createTransport(sendGridTransport(options));
+// const transporter = nodemailer.createTransport(sendGridTransport(options));
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.sendGrid_api);
 
@@ -34,8 +34,13 @@ router.post("/", async (req, res) => {
 
     const token = crypto.randomBytes(32).toString("hex");
 
+    var timestamp = new Date().getTime();
+    var createdTime = new Date(timestamp);
+
+    const currentYear = new Date().getFullYear();
+
     user.resetToken = token;
-    user.expireToken = Date.now() + 600000;
+    user.expireToken = timestamp + 600000;
 
     await user.save();
 
@@ -45,17 +50,35 @@ router.post("/", async (req, res) => {
       to: user.email,
       from: "gioanno000@citymail.cuny.edu",
       subject: "Password reset request for SocialPulse2 account!",
-      html: `<p>Hey ${user.name
-        .split(" ")[0]
-        .toString()}, There was a request for password reset for your SocialPulse2 account!. <a href=${href}>Click this link to reset the password </a>   </p>
-      <p>This token is only valid for 10 minutes. If this email is not relevant to you please disregard it.</p></br><p>Thank you very much!</p>`,
+      html: `
+      <div style="text-align:center;">
+    <img src="https://res.cloudinary.com/dgnigx1ez/image/upload/v1671041660/socialpulse.png" alt="SocialPulse2 logo" width="200" height="200">
+  </div>
+  <h1 style="color:#1e3465;text-align:center;">You Reset Password Link for SocialPulse2</h1>
+  <h2 style="color:#282c34;text-align:left;">This email is intended for the user with name: <span style="color:#f3682f;">${user.name
+    .split(" ")[0]
+    .toString()}</span> and email address: <span style="color:#f3682f;">${
+        user.email
+      }</span> registered at SocialPulse2.</h2>
+  <div style="padding: 1px; background-color: #f1f1f1; width: 50%; margin-left: auto; margin-right: auto; text-align: center;">
+    <a href="${href}" style="color:#282c34;">Change Password</a>
+  </div>
+  <h3 style="color:#13a2da;text-align:center;">Reset link created at: ${createdTime}</h3>
+  <h3 style="color:#13a2da;text-align:center;">Reset link expires at: ${
+    user.expireToken
+  }</h3>
+  <h2 style="color:#ff0000;text-align:left;size=5rem;">You received this email because someone requested to reset the password associated with this email account at SocialPulse2! If this was not you, please change your password!</h2>
+  <h4 style="color:#1c1f25;text-align:center;">Thank you very much for choosing SocialPulse2!</h4>
+  <h4 style="color:#1c1f25;text-align:center;">© ${currentYear}, SocialPulse2, Inc. or its affiliates. All rights reserved.</h4>
+      `,
     };
 
-    transporter.sendMail(mailOptions, (err, info) => err && console.log(err));
+    // transporter.sendMail(mailOptions, (err, info) => err && console.log(err));
+
     sgMail
       .send(mailOptions)
       .then(() => {
-        console.log("Email sent!");
+        console.log("Email sent successfully!");
       })
       .catch((error) => {
         console.error(error);
