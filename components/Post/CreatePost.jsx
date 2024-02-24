@@ -89,7 +89,7 @@ function CreatePost({ user, setPosts }) {
     setAudioChunks(localAudioChunks);
   };
 
-  // Stopping the recording.
+  // Stopping the recording
   const stopRecording = async () => {
     setRecordingStatus("inactive");
 
