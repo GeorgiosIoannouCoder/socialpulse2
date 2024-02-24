@@ -104,15 +104,18 @@ function CreatePost({ user, setPosts }) {
       const audioURL = URL.createObjectURL(audioBlob);
       setAudio(audioURL);
       setAudioChunks([]);
-  
+
       //transcribe audio
-      let { pipeline, env } = await import('@xenova/transformers');
+      let { pipeline, env } = await import("@xenova/transformers");
       env.allowLocalModels = false;
       env.useBrowserCache = false;
-      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+      const transcriber = await pipeline(
+        "automatic-speech-recognition",
+        "Xenova/whisper-tiny.en"
+      );
       const audioTrans = await transcriber(audioURL);
       console.log("Output: ", audioTrans.text);
-  
+
       //update the newPost location here
       setNewPost({ ...newPost, location: audioTrans.text.replace(".", "") });
     };
@@ -144,9 +147,6 @@ function CreatePost({ user, setPosts }) {
           }
         } else if (media.type.startsWith("video/")) {
           picUrl = await uploadVid(media);
-
-          // console.log("video url: ", picUrl);
-
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Video!");
@@ -171,30 +171,41 @@ function CreatePost({ user, setPosts }) {
 
     // Uploading the audio to cloudinary when user posts.
     // Automatic Speech Recognition.
-    if (audioBlobRef.current != null) {
-      const audioUploadUrl = await uploadAudio(audioBlobRef.current);
+    // if (audioBlobRef.current != null) {
+    //   const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
-      if (!audioUploadUrl) {
-        return setError("Error Uploading Audio!");
-      }
+    //   if (!audioUploadUrl) {
+    //     return setError("Error Uploading Audio!");
+    //   }
 
-      try {
-        let { pipeline, env } = await import("@xenova/transformers");
+    //   try {
+    //     let { pipeline, env } = await import("@xenova/transformers");
 
-        env.allowLocalModels = false;
-        env.useBrowserCache = false;
+    //     env.allowLocalModels = false;
+    //     env.useBrowserCache = false;
 
-        const transcriber = await pipeline(
-          "automatic-speech-recognition",
-          "Xenova/whisper-tiny.en"
-        );
+    //     const transcriber = await pipeline(
+    //       "automatic-speech-recognition",
+    //       "Xenova/whisper-tiny.en"
+    //     );
 
-        const output = await transcriber(audioUploadUrl);
+    //     const output = await transcriber(audioUploadUrl);
 
-        console.log("Audio transcription output: ", output);
-      } catch (error) {
-        return setError("Error Transcribing Audio!");
-      }
+    //     console.log("Audio transcription output: ", output);
+    //   } catch (error) {
+    //     return setError("Error Transcribing Audio!");
+    //   }
+    // }
+
+    // Console logging the transcription of the image
+    if (picUrl) {
+      query(picUrl)
+        .then((result) => {
+          console.log(JSON.stringify(result[0].generated_text));
+        })
+        .catch((error) => {
+          console.error("Error querying model:", error);
+        });
     }
 
     await submitNewPost(
@@ -213,6 +224,22 @@ function CreatePost({ user, setPosts }) {
     setMediaPreview(null);
     setLoading(false);
   };
+
+  // Function to generate transcription from image
+  async function query(url) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+      {
+        headers: {
+          Authorization: "Bearer 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", //leon's huggingface API key
+        },
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }
+    );
+    const result = await response.json();
+    return result;
+  }
 
   // Creating variables for the different post type options.
   const postTypeOptions = [
