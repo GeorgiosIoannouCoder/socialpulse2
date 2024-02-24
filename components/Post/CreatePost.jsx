@@ -104,17 +104,27 @@ function CreatePost({ user, setPosts }) {
       const audioURL = URL.createObjectURL(audioBlob);
       setAudio(audioURL);
       setAudioChunks([]);
-  
+
       //transcribe audio
-      let { pipeline, env } = await import('@xenova/transformers');
-      env.allowLocalModels = false;
-      env.useBrowserCache = false;
-      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
-      const audioTrans = await transcriber(audioURL);
-      console.log("Output: ", audioTrans.text);
-  
-      //update the newPost location here
-      setNewPost({ ...newPost, location: audioTrans.text.replace(".", "") });
+      try {
+        let { pipeline, env } = await import("@xenova/transformers");
+
+        env.allowLocalModels = false;
+        env.useBrowserCache = false;
+
+        const transcriber = await pipeline(
+          "automatic-speech-recognition",
+          "Xenova/whisper-tiny.en"
+        );
+
+        const output = await transcriber(audioURL);
+        // console.log("Audio transcription output:", output.text);
+
+        //update the newPost location here
+        setNewPost({ ...newPost, location: output.text.replace(".", "") });
+      } catch (error) {
+        return setError("Error Transcribing Audio!");
+      }
     };
   };
 
@@ -287,10 +297,10 @@ function CreatePost({ user, setPosts }) {
               <ButtonContent
                 hidden
                 style={{
-                  color: "#e5bf4d",
+                  color: "#d1d1d1",
                 }}
               >
-                Get Microphone
+                Add Location
               </ButtonContent>
               <ButtonContent visible>
                 <Icon color="blue" name="microphone" />

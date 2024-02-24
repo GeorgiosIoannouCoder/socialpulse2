@@ -119,10 +119,13 @@ router.post("/", authMiddleware, async (req, res) => {
       newPost.keywords = keywords[keywords.length - 1];
     }
 
+    if (picUrl) {
+      newPost.picUrl = picUrl;
+    }
+
     if (role !== "Super") {
       // Charge 10 words per image.
       if (picUrl) {
-        newPost.picUrl = picUrl;
         wordCount += Number(10);
       }
 
