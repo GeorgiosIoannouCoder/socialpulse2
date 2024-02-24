@@ -90,24 +90,31 @@ function CreatePost({ user, setPosts }) {
   };
 
   // Stopping the recording.
-  const stopRecording = () => {
+  const stopRecording = async () => {
     setRecordingStatus("inactive");
 
-    // Stops the recording instance.
+    //stops the recording instance
     mediaRecorder.current.stop();
-
-    mediaRecorder.current.onstop = () => {
-      // Creates a blob file from the audiochunks data.
+    mediaRecorder.current.onstop = async () => {
+      //creates a blob file from the audiochunks data
       const audioBlob = new Blob(audioChunks, { type: mimeType });
-
       audioBlobRef.current = audioBlob;
 
-      // Creates a playable URL from the blob file.
+      //creates a playable URL from the blob file
       const audioURL = URL.createObjectURL(audioBlob);
-
       setAudio(audioURL);
-
       setAudioChunks([]);
+  
+      //transcribe audio
+      let { pipeline, env } = await import('@xenova/transformers');
+      env.allowLocalModels = false;
+      env.useBrowserCache = false;
+      const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny.en');
+      const audioTrans = await transcriber(audioURL);
+      console.log("Output: ", audioTrans.text);
+  
+      //update the newPost location here
+      setNewPost({ ...newPost, location: audioTrans.text.replace(".", "") });
     };
   };
 
@@ -319,7 +326,8 @@ function CreatePost({ user, setPosts }) {
             </Button>
           ) : null}
         </div>
-        {audio ? (
+        {/* ------- displaying the audio recording ------- */}
+        {/*audio ? (
           <div
             style={{
               display: "inline-block",
@@ -333,7 +341,7 @@ function CreatePost({ user, setPosts }) {
           >
             <audio src={audio} controls></audio>
           </div>
-        ) : null}
+          ) : null*/}
 
         {/* allowing users to select keywords for their post */}
         <Form.Field>
