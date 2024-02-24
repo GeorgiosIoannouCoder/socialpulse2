@@ -530,5 +530,6 @@ function CreatePost({ user, setPosts }) {
     </>
   );
 }
-
+}
 export default CreatePost;
+
