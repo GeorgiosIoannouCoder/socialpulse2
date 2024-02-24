@@ -115,7 +115,7 @@ function CreatePost({ user, setPosts }) {
 
         const transcriber = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-large"
+          "Xenova/whisper-medium"
         );
 
         const output = await transcriber(audioURL);
@@ -137,6 +137,7 @@ function CreatePost({ user, setPosts }) {
     paddingTop: media === null && "60px",
     cursor: "pointer",
     borderColor: highlighted ? "green" : "black",
+    marginTop: "50px",
   });
 
   const handleSubmit = async (e) => {
@@ -197,7 +198,7 @@ function CreatePost({ user, setPosts }) {
 
         const transcriber = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-large"
+          "Xenova/whisper-medium"
         );
 
         const output = await transcriber(audioUploadUrl);
@@ -284,78 +285,6 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
-        <div className="audio-controls">
-          {!permission ? (
-            <Button
-              animated="vertical"
-              onClick={getMicrophonePermission}
-              style={{
-                marginLeft: "30px",
-                marginBottom: "20px",
-                width: "115px",
-              }}
-              color="black"
-            >
-              <ButtonContent
-                hidden
-                style={{
-                  color: "#d1d1d1",
-                }}
-              >
-                Add Location
-              </ButtonContent>
-              <ButtonContent visible>
-                <Icon color="blue" name="microphone" />
-              </ButtonContent>
-            </Button>
-          ) : null}
-          {permission && recordingStatus === "inactive" ? (
-            <Button
-              style={{
-                marginLeft: "30px",
-                marginBottom: "20px",
-                width: "141px",
-                color: "#ff0000",
-              }}
-              color="black"
-              onClick={startRecording}
-            >
-              Start Recording
-            </Button>
-          ) : null}
-          {recordingStatus === "recording" ? (
-            <Button
-              style={{
-                marginLeft: "30px",
-                marginBottom: "20px",
-                width: "141px",
-                color: "#00ff00",
-              }}
-              color="black"
-              onClick={stopRecording}
-            >
-              Stop Recording
-            </Button>
-          ) : null}
-        </div>
-        {/* ------- displaying the audio recording ------- */}
-        {/*audio ? (
-          <div
-            style={{
-              display: "inline-block",
-              float: "right",
-              marginRight: "65px",
-              marginBottom: "-100px",
-              position: "relative",
-              top: "-60px",
-            }}
-            className="audio-container"
-          >
-            <audio src={audio} controls></audio>
-          </div>
-          ) : null*/}
-
-        {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
           <Dropdown
@@ -498,11 +427,85 @@ function CreatePost({ user, setPosts }) {
           circular
           disabled={newPost.text === "" || loading}
           content={<strong>Post</strong>}
-          style={{ backgroundColor: "#1DA1F2", color: "white" }}
+          style={{
+            backgroundColor: "#1DA1F2",
+            color: "white",
+          }}
           icon="send"
           loading={loading}
         />
       </Form>
+      <div className="audio-controls">
+        {!permission ? (
+          <Button
+            animated="vertical"
+            onClick={getMicrophonePermission}
+            style={{
+              marginTop: "-510px",
+              width: "115px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              hidden
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Add Location
+            </ButtonContent>
+            <ButtonContent visible>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+        {permission && recordingStatus === "inactive" ? (
+          <Button
+            animated="vertical"
+            onClick={startRecording}
+            style={{
+              marginTop: "-510px",
+              width: "115px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              hidden
+              style={{
+                color: "#ff0000",
+              }}
+            >
+              Start Recording
+            </ButtonContent>
+            <ButtonContent visible>
+              <Icon color="red" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+        {recordingStatus === "recording" ? (
+          <Button
+            animated="vertical"
+            onClick={stopRecording}
+            style={{
+              marginTop: "-510px",
+              width: "115px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              hidden
+              style={{
+                color: "#00ff00",
+              }}
+            >
+              Stop Recording
+            </ButtonContent>
+            <ButtonContent visible>
+              <Icon color="green" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+      </div>
       <Divider />
     </>
   );
