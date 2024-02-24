@@ -115,7 +115,7 @@ function CreatePost({ user, setPosts }) {
 
         const transcriber = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-large-v2"
+          "Xenova/whisper-tiny"
         );
 
         const output = await transcriber(audioURL);
@@ -197,7 +197,7 @@ function CreatePost({ user, setPosts }) {
 
         const transcriber = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-large-v2"
+          "Xenova/whisper-tiny"
         );
 
         const output = await transcriber(audioUploadUrl);
