@@ -15,6 +15,7 @@ import { submitNewPost } from "../../utils/postActions";
 import CropImageModal from "./CropImageModal";
 import keywordss from "../../utils/keyWords";
 
+
 function CreatePost({ user, setPosts }) {
   const [newPost, setNewPost] = useState({
     // Initial values for the new post.
@@ -49,8 +50,44 @@ function CreatePost({ user, setPosts }) {
   const [audioChunks, setAudioChunks] = useState([]);
   const [audio, setAudio] = useState(null);
   const mediaRecorder = useRef(null);
-
   const mimeType = "audio/webm";
+
+
+
+  ///////////////////////////////////////////////////////
+  // REAL TIME SPEECH RECOGNITION
+
+  // Function to start speech recognition with the provided stream
+  const startSpeechRecognition = (stream) => {
+    var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function (event) {
+      var speechline = event.results[0][0].transcript;
+      updateOutput(speechline);
+    };
+
+    recognition.onspeechend = function () {
+      recognition.stop();
+    };
+    recognition.start();
+  };
+
+
+  const updateOutput = (speechline) => {
+    //   console.log(speechline)
+
+    // Update the newPost state with the recognized speech
+    setNewPost(prevState => ({
+      ...prevState,
+      text: prevState.text + speechline // Appending speechline to the existing text in the textarea
+    }));
+  };
+
+  /////////////////////////////////////////////////////
 
   // Getting the microphone permission from the user.
   const getMicrophonePermission = async () => {
@@ -233,7 +270,7 @@ function CreatePost({ user, setPosts }) {
     // Update the state with the selected value.
     setKeywords((prevKeywords) => [...prevKeywords, value]);
   };
-
+  // ===============================================================================================
   return (
     <>
       {showModal && (
@@ -256,6 +293,7 @@ function CreatePost({ user, setPosts }) {
         <Form.Group>
           <Image src={user.profilePicUrl} circular avatar inline />
           <Form.TextArea
+            id="convert_text"
             placeholder="What's New?"
             name="text"
             value={newPost.text}
@@ -264,6 +302,7 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
+
         <div className="audio-controls">
           {!permission ? (
             <Button
@@ -324,6 +363,25 @@ function CreatePost({ user, setPosts }) {
           </div>
         ) : null}
 
+
+        {/* Real Time Speech Recognition Button*/}
+        <Button
+          style={{
+            padding: "1em",
+            marginLeft: "auto",
+            marginRight: "auto",
+            display: "block",
+            marginBottom: "2em",
+            marginTop: "0em",
+          }}
+          type="button"
+          onClick={startSpeechRecognition}
+        >
+          <i className="microphone icon" style={{ margin: "auto" }}></i> {/* Center the icon */}
+        </Button>
+
+
+
         {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
@@ -368,8 +426,8 @@ function CreatePost({ user, setPosts }) {
                 user.role === "Super" || user.role === "Corporate"
                   ? postTypeOptions // Display all options for Super or Corporate users
                   : postTypeOptions.filter(
-                      (option) => option.value === "Regular"
-                    ) // Display only "Regular Post" for other users
+                    (option) => option.value === "Regular"
+                  ) // Display only "Regular Post" for other users
               }
               onChange={handleDropdownChangeType}
               search
@@ -415,7 +473,7 @@ function CreatePost({ user, setPosts }) {
               {(typeof media === "object" &&
                 media.type &&
                 media.type.startsWith("image/")) ||
-              (typeof media === "string" && media.startsWith("data:image/")) ? (
+                (typeof media === "string" && media.startsWith("data:image/")) ? (
                 <Image
                   style={{ height: "150px", width: "150px" }}
                   src={mediaPreview}
