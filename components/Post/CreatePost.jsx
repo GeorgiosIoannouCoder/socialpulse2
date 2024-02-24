@@ -440,7 +440,7 @@ function CreatePost({ user, setPosts }) {
             onClick={getMicrophonePermission}
             style={{
               marginTop: "-510px",
-              width: "115px",
+              width: "125px",
             }}
             color="black"
           >
