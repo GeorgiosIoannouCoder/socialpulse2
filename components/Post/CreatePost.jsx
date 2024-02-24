@@ -60,9 +60,9 @@ function CreatePost({ user, setPosts }) {
   // Function to start speech recognition with the provided stream
   const startSpeechRecognition = (stream) => {
     var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.lang = 'en-US';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     recognition.onresult = function (event) {
@@ -83,7 +83,9 @@ function CreatePost({ user, setPosts }) {
     // Update the newPost state with the recognized speech
     setNewPost(prevState => ({
       ...prevState,
-      text: prevState.text + speechline // Appending speechline to the existing text in the textarea
+      // text: prevState.text + speechline // Appending speechline to the existing text in the textarea
+      text: speechline // Appending speechline to the existing text in the textarea
+
     }));
   };
 
