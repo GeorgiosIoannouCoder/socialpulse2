@@ -307,6 +307,7 @@ function CreatePost({ user, setPosts }) {
             label="Add Location"
             icon="map marker alternate"
             placeholder="Location?"
+            required
           />
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Input
