@@ -319,7 +319,15 @@ function CreatePost({ user, setPosts }) {
               placeholder="Company name?"
             />
           )}
-
+          <Form.Input
+            value={newPost.language}
+            name="language"
+            onChange={handleChange}
+            label="Add Language"
+            icon="language"
+            placeholder="Language?"
+            style={{ width: "145px", marginBottom: "10px" }}
+          />
           {/* allowing users to choose their post type */}
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Dropdown
@@ -338,17 +346,6 @@ function CreatePost({ user, setPosts }) {
               clearable
             />
           )}
-
-          <Form.Input
-            value={newPost.language}
-            name="language"
-            onChange={handleChange}
-            label="Add Language"
-            icon="language"
-            placeholder="Language?"
-            style={{ width: "145px", marginBottom: "10px" }}
-          />
-
           <input
             ref={inputRef}
             onChange={handleChange}
@@ -448,14 +445,14 @@ function CreatePost({ user, setPosts }) {
             color="black"
           >
             <ButtonContent
-              hidden
+              visible
               style={{
                 color: "#d1d1d1",
               }}
             >
               Add Location
             </ButtonContent>
-            <ButtonContent visible>
+            <ButtonContent hidden>
               <Icon color="blue" name="microphone" />
             </ButtonContent>
           </Button>
