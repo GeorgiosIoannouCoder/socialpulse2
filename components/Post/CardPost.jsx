@@ -496,11 +496,12 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               <Header icon="translate" content="Translate Post" />
               <Modal.Content>
                 <Message size="mini" color="orange">
-                  Post language:{" "}
                   {postLanguage.length === 0
-                    ? "No language detected"
-                    : postLanguage.charAt(0).toUpperCase() +
-                      postLanguage.slice(1)}
+                    ? `Post language: ${post.language}`
+                    : `Post language detected by model: ${
+                        postLanguage.charAt(0).toUpperCase() +
+                        postLanguage.slice(1)
+                      }`}
                 </Message>
 
                 <Message size="mini" color="orange">

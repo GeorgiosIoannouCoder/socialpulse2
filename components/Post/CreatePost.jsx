@@ -22,6 +22,7 @@ function CreatePost({ user, setPosts }) {
     text: "",
     location: "",
     company: "",
+    language: "",
   });
   const [loading, setLoading] = useState(false);
   const inputRef = useRef();
@@ -211,6 +212,7 @@ function CreatePost({ user, setPosts }) {
       newPost.text,
       newPost.location,
       newPost.company,
+      newPost.language,
       type,
       keywords,
       picUrl,
@@ -410,12 +412,13 @@ function CreatePost({ user, setPosts }) {
           <Form.Input
             value={newPost.language}
             name="language"
+            onChange={handleChange}
             label="Add Language"
             icon="language"
-            placeholder="Not used! Exp."
+            placeholder="Language?"
             style={{ width: "145px", marginBottom: "10px" }}
-            required
           />
+
           <input
             ref={inputRef}
             onChange={handleChange}

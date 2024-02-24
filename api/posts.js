@@ -21,7 +21,7 @@ const tabooWords = require("../utils/tabooWords");
 router.post("/", authMiddleware, async (req, res) => {
   try {
     let { text } = req.body;
-    const { location, company, type, keywords, picUrl } = req.body;
+    const { location, company, language, type, keywords, picUrl } = req.body;
 
     const user = await UserModel.findById(req.userId);
     const role = user.role;
@@ -95,6 +95,10 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(401).send("Please select at least one keyword!");
     }
 
+    if (!language) {
+      return res.status(401).send("What is the language of the post?");
+    }
+
     // Replace text with the censored version
     text = censorTabooWords();
 
@@ -109,6 +113,10 @@ router.post("/", authMiddleware, async (req, res) => {
 
     if (company) {
       newPost.company = company;
+    }
+
+    if (language) {
+      newPost.language = language;
     }
 
     if (type) {
