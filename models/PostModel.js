@@ -7,6 +7,7 @@ const PostSchema = new Schema(
     text: { type: String, required: true },
     location: { type: String },
     company: { type: String },
+    language: { type: String },
     type: {
       type: String,
       default: "Regular",
