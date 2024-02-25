@@ -256,7 +256,7 @@ function CreatePost({ user, setPosts }) {
     //   inputs: newPost.text,
     // });
 
-    sentimentAnalysis({ inputs: newPost.text }).then((response) => {
+    sentimentAnalysis({ inputs: "I like you. I love you" }).then((response) => {
       console.log(JSON.stringify(response));
     });
 
