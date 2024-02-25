@@ -16,7 +16,6 @@ import { submitNewPost } from "../../utils/postActions";
 import CropImageModal from "./CropImageModal";
 import keywordss from "../../utils/keyWords";
 
-
 function CreatePost({ user, setPosts }) {
   const [newPost, setNewPost] = useState({
     // Initial values for the new post.
@@ -54,14 +53,24 @@ function CreatePost({ user, setPosts }) {
   const mediaRecorder = useRef(null);
   const mimeType = "audio/webm";
 
-
-
   ///////////////////////////////////////////////////////
   // REAL TIME SPEECH RECOGNITION
 
+  const updateOutput = (speechline) => {
+    //   console.log(speechline)
+
+    // Update the newPost state with the recognized speech
+    setNewPost((prevState) => ({
+      ...prevState,
+      // text: prevState.text + speechline // Appending speechline to the existing text in the textarea
+      text: speechline, // Appending speechline to the existing text in the textarea
+    }));
+  };
+
   // Function to start speech recognition with the provided stream
   const startSpeechRecognition = (stream) => {
-    var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    var recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
     recognition.continuous = true;
     recognition.lang = navigator.language;
     // console.log(recognition.lang)
@@ -77,19 +86,6 @@ function CreatePost({ user, setPosts }) {
       recognition.stop();
     };
     recognition.start();
-  };
-
-
-  const updateOutput = (speechline) => {
-    //   console.log(speechline)
-
-    // Update the newPost state with the recognized speech
-    setNewPost(prevState => ({
-      ...prevState,
-      // text: prevState.text + speechline // Appending speechline to the existing text in the textarea
-      text: speechline // Appending speechline to the existing text in the textarea
-
-    }));
   };
 
   /////////////////////////////////////////////////////
@@ -108,7 +104,9 @@ function CreatePost({ user, setPosts }) {
         alert(err.message);
       }
     } else {
-      alert("The MediaRecorder API is not supported in your browser.");
+      return setError(
+        "The MediaRecorder API is not supported in your browser!"
+      );
     }
   };
 
@@ -177,13 +175,14 @@ function CreatePost({ user, setPosts }) {
     paddingTop: media === null && "60px",
     cursor: "pointer",
     borderColor: highlighted ? "green" : "black",
-    marginTop: "50px",
+    marginTop: "10px",
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     let picUrl;
+    let picCaption;
 
     if (media !== null) {
       if (typeof media === "object" && media.type) {
@@ -218,17 +217,32 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // Automatic Speech Recognition.
-    // Console logging the transcription of the image
-    if (picUrl) {
-      query(picUrl)
-        .then((result) => {
-          console.log(JSON.stringify(result[0].generated_text));
-        })
-        .catch((error) => {
-          console.error("Error querying model:", error);
-        });
+    // Function to generate transcription from image
+    async function query(url) {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+        {
+          headers: {
+            Authorization: "Bearer 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",
+          },
+          method: "POST",
+          body: JSON.stringify({ url }),
+        }
+      );
+      const result = await response.json();
+
+      return result[0].generated_text;
     }
+
+    // Console logging the transcription of the image.
+    if (picUrl) {
+      picCaption = await query(picUrl);
+
+      if (!picCaption) {
+        return setError("Error Transcribing Image!");
+      }
+    }
+
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
@@ -248,8 +262,7 @@ function CreatePost({ user, setPosts }) {
         );
 
         const output = await transcriber(audioUploadUrl);
-
-        console.log("Audio transcription output: ", output);
+        // console.log("Audio transcription output:", output.text);
       } catch (error) {
         return setError("Error Transcribing Audio!");
       }
@@ -263,6 +276,7 @@ function CreatePost({ user, setPosts }) {
       type,
       keywords,
       picUrl,
+      picCaption,
       setPosts,
       setNewPost,
       setError
@@ -272,22 +286,6 @@ function CreatePost({ user, setPosts }) {
     setMediaPreview(null);
     setLoading(false);
   };
-
-  // Function to generate transcription from image
-  async function query(url) {
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
-      {
-        headers: {
-          Authorization: "Bearer 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",
-        },
-        method: "POST",
-        body: JSON.stringify({ url }),
-      }
-    );
-    const result = await response.json();
-    return result;
-  }
 
   // Creating variables for the different post type options.
   const postTypeOptions = [
@@ -327,7 +325,6 @@ function CreatePost({ user, setPosts }) {
           setShowModal={setShowModal}
         />
       )}
-
       <Form error={error !== null} onSubmit={handleSubmit}>
         <Message
           error
@@ -350,18 +347,30 @@ function CreatePost({ user, setPosts }) {
         </Form.Group>
         {/* Real Time Speech Recognition Button*/}
         <Button
+          animated="vertical"
+          onClick={startSpeechRecognition}
           style={{
-            padding: "1em",
             marginLeft: "auto",
             marginRight: "auto",
+            marginTop: "10px",
+            marginBottom: "20px",
             display: "block",
-            marginBottom: "2em",
-            marginTop: "0em",
+            width: "118px",
           }}
+          color="black"
           type="button"
-          onClick={startSpeechRecognition}
         >
-          <i className="microphone icon" style={{ margin: "auto" }}></i> {/* Center the icon */}
+          <ButtonContent
+            visible
+            style={{
+              color: "#d1d1d1",
+            }}
+          >
+            Record Post
+          </ButtonContent>
+          <ButtonContent hidden>
+            <Icon color="blue" name="microphone" />
+          </ButtonContent>
         </Button>
         {/* allowing users to select keywords for their post */}
         <Form.Field>
@@ -406,6 +415,7 @@ function CreatePost({ user, setPosts }) {
             icon="language"
             placeholder="Language?"
             style={{ width: "145px", marginBottom: "10px" }}
+            required
           />
           {/* allowing users to choose their post type */}
           {(user.role === "Super" || user.role === "Corporate") && (
@@ -416,8 +426,8 @@ function CreatePost({ user, setPosts }) {
                 user.role === "Super" || user.role === "Corporate"
                   ? postTypeOptions // Display all options for Super or Corporate users
                   : postTypeOptions.filter(
-                    (option) => option.value === "Regular"
-                  ) // Display only "Regular Post" for other users
+                      (option) => option.value === "Regular"
+                    ) // Display only "Regular Post" for other users
               }
               onChange={handleDropdownChangeType}
               search
@@ -433,7 +443,80 @@ function CreatePost({ user, setPosts }) {
             type="file"
             accept="image/*, video/*"
           />
+          <br />
         </Form.Group>
+        <div className="audio-controls">
+          {!permission ? (
+            <Button
+              animated="vertical"
+              onClick={getMicrophonePermission}
+              style={{
+                width: "144px",
+                marginTop: "5px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                visible
+                style={{
+                  color: "#d1d1d1",
+                }}
+              >
+                Record Location
+              </ButtonContent>
+              <ButtonContent hidden>
+                <Icon color="blue" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+          {permission && recordingStatus === "inactive" ? (
+            <Button
+              animated="vertical"
+              onClick={startRecording}
+              style={{
+                width: "115px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                hidden
+                style={{
+                  color: "#0e6eb8",
+                }}
+              >
+                Start Recording
+              </ButtonContent>
+              <ButtonContent visible>
+                <Icon color="blue" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+          {recordingStatus === "recording" ? (
+            <Button
+              animated="vertical"
+              onClick={stopRecording}
+              style={{
+                width: "115px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                hidden
+                style={{
+                  color: "#00ff00",
+                }}
+              >
+                Stop Recording
+              </ButtonContent>
+              <ButtonContent visible>
+                <Icon color="green" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+        </div>
 
         <div
           onClick={() => inputRef.current.click()}
@@ -463,7 +546,7 @@ function CreatePost({ user, setPosts }) {
               {(typeof media === "object" &&
                 media.type &&
                 media.type.startsWith("image/")) ||
-                (typeof media === "string" && media.startsWith("data:image/")) ? (
+              (typeof media === "string" && media.startsWith("data:image/")) ? (
                 <Image
                   style={{ height: "150px", width: "150px" }}
                   src={mediaPreview}
@@ -512,81 +595,9 @@ function CreatePost({ user, setPosts }) {
           loading={loading}
         />
       </Form>
-      <div className="audio-controls">
-        {!permission ? (
-          <Button
-            animated="vertical"
-            onClick={getMicrophonePermission}
-            style={{
-              marginTop: "-510px",
-              width: "125px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              visible
-              style={{
-                color: "#d1d1d1",
-              }}
-            >
-              Add Location
-            </ButtonContent>
-            <ButtonContent hidden>
-              <Icon color="blue" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-        {permission && recordingStatus === "inactive" ? (
-          <Button
-            animated="vertical"
-            onClick={startRecording}
-            style={{
-              marginTop: "-510px",
-              width: "115px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              hidden
-              style={{
-                color: "#ff0000",
-              }}
-            >
-              Start Recording
-            </ButtonContent>
-            <ButtonContent visible>
-              <Icon color="red" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-        {recordingStatus === "recording" ? (
-          <Button
-            animated="vertical"
-            onClick={stopRecording}
-            style={{
-              marginTop: "-510px",
-              width: "115px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              hidden
-              style={{
-                color: "#00ff00",
-              }}
-            >
-              Stop Recording
-            </ButtonContent>
-            <ButtonContent visible>
-              <Icon color="green" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-      </div>
       <Divider />
     </>
   );
 }
 
 export default CreatePost;
-

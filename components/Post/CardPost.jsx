@@ -415,6 +415,15 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               content={[post.company, post.location].filter(Boolean).join(", ")}
             />
 
+            <Card.Meta>
+              <b style={{ color: "#ff0000" }}>
+                {post.company} {post.language} Post
+              </b>
+              {/* //post.textColor */}
+              {/* post.emotion */}
+              {/* post.topic */}
+            </Card.Meta>
+
             <b>
               <Card.Meta
                 content={post.keywords
@@ -423,6 +432,21 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                   .join(", ")}
               />
             </b>
+
+            {post.picCaption && (
+              <Card.Description
+                style={{
+                  fontSize: showFullText || hasRead ? "13px" : "13px",
+                  color: showFullText || hasRead ? "#23272f" : "transparent", //post.textColor
+                  overflow: "hidden",
+                  marginTop: "10px",
+                  textShadow: showFullText || hasRead ? "" : "0 0 8px #000",
+                }}
+                onCopy={(e) => e.preventDefault()}
+              >
+                Image Caption: {post.picCaption}
+              </Card.Description>
+            )}
 
             <Card.Description
               style={{

@@ -20,6 +20,7 @@ const PostSchema = new Schema(
     },
     keywords: [{ type: String, required: true }],
     picUrl: { type: String },
+    picCaption: { type: String },
     likes: [{ user: { type: Schema.Types.ObjectId, ref: "User" } }],
     likesCount: { type: Number, default: 0 }, // For displaying most liked posts.
     dislikes: [{ user: { type: Schema.Types.ObjectId, ref: "User" } }],
