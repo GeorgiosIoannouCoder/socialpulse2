@@ -61,7 +61,8 @@ function CreatePost({ user, setPosts }) {
   const startSpeechRecognition = (stream) => {
     var recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.continuous = true;
-    recognition.lang = 'en-US';
+    recognition.lang = navigator.language;
+    // console.log(recognition.lang)
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
