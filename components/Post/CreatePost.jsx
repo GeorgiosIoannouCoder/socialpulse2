@@ -606,14 +606,12 @@ function CreatePost({ user, setPosts }) {
             </div>
           ))}
         </div>
-
         <TextArea
-          placeholder="Translated Text..."
-          value={outputTranslator}
+          placeholder="Translated Post..."
+          value={newPost.text}
           rows={3}
           readOnly
         />
-
         <div style={{ display: "flex", justifyContent: "center" }}>
           <Button
             animated="vertical"
