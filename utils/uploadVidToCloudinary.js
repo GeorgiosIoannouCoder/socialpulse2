@@ -13,7 +13,8 @@ const uploadVid = async (media) => {
       form
     );
 
-    return res.data.url;
+    // return res.data.url;
+    return res.data.url.replace(/^http:/, "https:");
   } catch (error) {
     console.error("Error uploading media:", error);
     return null;

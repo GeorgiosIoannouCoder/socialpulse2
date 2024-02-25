@@ -12,6 +12,7 @@ export const submitNewPost = async (
   text,
   location,
   company,
+  language,
   type,
   keywords,
   picUrl,
@@ -24,13 +25,21 @@ export const submitNewPost = async (
       text,
       location,
       company,
+      language,
       type,
       keywords,
       picUrl,
     });
 
     setPosts((prev) => [res.data, ...prev]);
-    setNewPost({ text: "", location: "", company: "", type: "", keywords: [] });
+    setNewPost({
+      text: "",
+      location: "",
+      company: "",
+      language: "",
+      type: "",
+      keywords: [],
+    });
   } catch (error) {
     const errorMsg = catchErrors(error);
     setError(errorMsg);

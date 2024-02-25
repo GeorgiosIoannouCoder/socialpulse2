@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Button,
+  ButtonContent,
   Image,
   Divider,
   Message,
@@ -22,6 +23,7 @@ function CreatePost({ user, setPosts }) {
     text: "",
     location: "",
     company: "",
+    language: "",
   });
   const [loading, setLoading] = useState(false);
   const inputRef = useRef();
@@ -128,25 +130,42 @@ function CreatePost({ user, setPosts }) {
     setAudioChunks(localAudioChunks);
   };
 
-  // Stopping the recording.
-  const stopRecording = () => {
+  // Stopping the recording
+  const stopRecording = async () => {
     setRecordingStatus("inactive");
 
-    // Stops the recording instance.
+    //stops the recording instance
     mediaRecorder.current.stop();
-
-    mediaRecorder.current.onstop = () => {
-      // Creates a blob file from the audiochunks data.
+    mediaRecorder.current.onstop = async () => {
+      //creates a blob file from the audiochunks data
       const audioBlob = new Blob(audioChunks, { type: mimeType });
-
       audioBlobRef.current = audioBlob;
 
-      // Creates a playable URL from the blob file.
+      //creates a playable URL from the blob file
       const audioURL = URL.createObjectURL(audioBlob);
-
       setAudio(audioURL);
-
       setAudioChunks([]);
+
+      //transcribe audio
+      try {
+        let { pipeline, env } = await import("@xenova/transformers");
+
+        env.allowLocalModels = false;
+        env.useBrowserCache = false;
+
+        const transcriber = await pipeline(
+          "automatic-speech-recognition",
+          "Xenova/whisper-small" //  "Xenova/whisper-tiny" or "Xenova/whisper-base" or  "Xenova/whisper-small"
+        );
+
+        const output = await transcriber(audioURL);
+        // console.log("Audio transcription output:", output.text);
+
+        //update the newPost location here
+        setNewPost({ ...newPost, location: output.text.replace(".", "") });
+      } catch (error) {
+        return setError("Error Transcribing Audio!");
+      }
     };
   };
 
@@ -158,6 +177,7 @@ function CreatePost({ user, setPosts }) {
     paddingTop: media === null && "60px",
     cursor: "pointer",
     borderColor: highlighted ? "green" : "black",
+    marginTop: "50px",
   });
 
   const handleSubmit = async (e) => {
@@ -176,9 +196,6 @@ function CreatePost({ user, setPosts }) {
           }
         } else if (media.type.startsWith("video/")) {
           picUrl = await uploadVid(media);
-
-          // console.log("video url: ", picUrl);
-
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Video!");
@@ -201,8 +218,17 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // Uploading the audio to cloudinary when user posts.
     // Automatic Speech Recognition.
+    // Console logging the transcription of the image
+    if (picUrl) {
+      query(picUrl)
+        .then((result) => {
+          console.log(JSON.stringify(result[0].generated_text));
+        })
+        .catch((error) => {
+          console.error("Error querying model:", error);
+        });
+    }
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
@@ -218,12 +244,12 @@ function CreatePost({ user, setPosts }) {
 
         const transcriber = await pipeline(
           "automatic-speech-recognition",
-          "Xenova/whisper-tiny.en"
+          "Xenova/whisper-small" //  "Xenova/whisper-tiny" or "Xenova/whisper-base" or  "Xenova/whisper-small"
         );
 
         const output = await transcriber(audioUploadUrl);
 
-        console.log("Output: ", output);
+        console.log("Audio transcription output: ", output);
       } catch (error) {
         return setError("Error Transcribing Audio!");
       }
@@ -233,6 +259,7 @@ function CreatePost({ user, setPosts }) {
       newPost.text,
       newPost.location,
       newPost.company,
+      newPost.language,
       type,
       keywords,
       picUrl,
@@ -245,6 +272,22 @@ function CreatePost({ user, setPosts }) {
     setMediaPreview(null);
     setLoading(false);
   };
+
+  // Function to generate transcription from image
+  async function query(url) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }
+    );
+    const result = await response.json();
+    return result;
+  }
 
   // Creating variables for the different post type options.
   const postTypeOptions = [
@@ -305,68 +348,6 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
-
-        <div className="audio-controls">
-          {!permission ? (
-            <Button
-              style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
-              }}
-              onClick={getMicrophonePermission}
-              type="button"
-            >
-              Get Microphone
-            </Button>
-          ) : null}
-          {permission && recordingStatus === "inactive" ? (
-            <Button
-              style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
-              }}
-              onClick={startRecording}
-              type="button"
-            >
-              Start Recording
-            </Button>
-          ) : null}
-          {recordingStatus === "recording" ? (
-            <Button
-              style={{
-                padding: "1em",
-                marginLeft: "2em",
-                marginBottom: "2em",
-                marginTop: "0em",
-              }}
-              onClick={stopRecording}
-              type="button"
-            >
-              Stop Recording
-            </Button>
-          ) : null}
-        </div>
-        {audio ? (
-          <div
-            style={{
-              display: "inline-block",
-              float: "right",
-              marginRight: "5em",
-              marginBottom: "-10em",
-              position: "relative",
-              top: "-71px",
-            }}
-            className="audio-container"
-          >
-            <audio src={audio} controls></audio>
-          </div>
-        ) : null}
-
-
         {/* Real Time Speech Recognition Button*/}
         <Button
           style={{
@@ -382,9 +363,6 @@ function CreatePost({ user, setPosts }) {
         >
           <i className="microphone icon" style={{ margin: "auto" }}></i> {/* Center the icon */}
         </Button>
-
-
-
         {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
@@ -408,6 +386,7 @@ function CreatePost({ user, setPosts }) {
             label="Add Location"
             icon="map marker alternate"
             placeholder="Location?"
+            required
           />
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Input
@@ -419,7 +398,15 @@ function CreatePost({ user, setPosts }) {
               placeholder="Company name?"
             />
           )}
-
+          <Form.Input
+            value={newPost.language}
+            name="language"
+            onChange={handleChange}
+            label="Add Language"
+            icon="language"
+            placeholder="Language?"
+            style={{ width: "145px", marginBottom: "10px" }}
+          />
           {/* allowing users to choose their post type */}
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Dropdown
@@ -517,14 +504,89 @@ function CreatePost({ user, setPosts }) {
           circular
           disabled={newPost.text === "" || loading}
           content={<strong>Post</strong>}
-          style={{ backgroundColor: "#1DA1F2", color: "white" }}
+          style={{
+            backgroundColor: "#1DA1F2",
+            color: "white",
+          }}
           icon="send"
           loading={loading}
         />
       </Form>
+      <div className="audio-controls">
+        {!permission ? (
+          <Button
+            animated="vertical"
+            onClick={getMicrophonePermission}
+            style={{
+              marginTop: "-510px",
+              width: "125px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              visible
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Add Location
+            </ButtonContent>
+            <ButtonContent hidden>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+        {permission && recordingStatus === "inactive" ? (
+          <Button
+            animated="vertical"
+            onClick={startRecording}
+            style={{
+              marginTop: "-510px",
+              width: "115px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              hidden
+              style={{
+                color: "#ff0000",
+              }}
+            >
+              Start Recording
+            </ButtonContent>
+            <ButtonContent visible>
+              <Icon color="red" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+        {recordingStatus === "recording" ? (
+          <Button
+            animated="vertical"
+            onClick={stopRecording}
+            style={{
+              marginTop: "-510px",
+              width: "115px",
+            }}
+            color="black"
+          >
+            <ButtonContent
+              hidden
+              style={{
+                color: "#00ff00",
+              }}
+            >
+              Stop Recording
+            </ButtonContent>
+            <ButtonContent visible>
+              <Icon color="green" name="microphone" />
+            </ButtonContent>
+          </Button>
+        ) : null}
+      </div>
       <Divider />
     </>
   );
 }
 
 export default CreatePost;
+

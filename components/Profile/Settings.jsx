@@ -289,15 +289,17 @@ const UpdatePassword = ({ setSuccess, setError, showPasswordFields }) => {
   const [userPasswords, setUserPasswords] = useState({
     currentPassword: "",
     newPassword: "",
+    confirmPassword: "",
   });
   const [typed, showTyped] = useState({
     field1: false,
     field2: false,
+    field3: false,
   });
 
-  const { field1, field2 } = typed;
+  const { field1, field2, field3 } = typed;
 
-  const { currentPassword, newPassword } = userPasswords;
+  const { currentPassword, newPassword, confirmPassword } = userPasswords;
 
   const isPasswordValid = (password) => {
     const passwordRegex =
@@ -342,9 +344,18 @@ const UpdatePassword = ({ setSuccess, setError, showPasswordFields }) => {
           if (!isPasswordValid(newPassword)) {
             return;
           }
+
+          if (newPassword !== confirmPassword) {
+            setErrorMsg("Passwords do not match!");
+            return;
+          }
+
           setLoading(true);
+
           await passwordUpdate(setSuccess, setError, userPasswords);
+
           setLoading(false);
+
           showPasswordFields(false);
         }}
         inverted
@@ -390,9 +401,33 @@ const UpdatePassword = ({ setSuccess, setError, showPasswordFields }) => {
               inverted
               required
             />
+            <Form.Input
+              fluid
+              icon={{
+                name: field3 ? "eye slash" : "eye",
+                circular: true,
+                link: true,
+                onClick: () =>
+                  showTyped((prev) => ({ ...prev, field3: !field3 })),
+              }}
+              type={field3 ? "text" : "password"}
+              iconPosition="left"
+              label="Confirm Password"
+              placeholder="Confirm New Password"
+              name="confirmPassword"
+              onChange={handleChange}
+              value={confirmPassword}
+              inverted
+              required
+            />
 
             <Button
-              disabled={loading || currentPassword === "" || newPassword === ""}
+              disabled={
+                loading ||
+                currentPassword === "" ||
+                newPassword === "" ||
+                confirmPassword === ""
+              }
               compact
               icon="configure"
               type="submit"

@@ -7,11 +7,21 @@ import catchErrors from "../../utils/catchErrors";
 
 function TokenPage() {
   const router = useRouter();
-  const [newPassword, setNewPassword] = useState({ field1: "", field2: "" });
-  const { field1, field2 } = newPassword;
+  const [newPassword, setNewPassword] = useState({
+    password1: "",
+    password2: "",
+  });
+  const { password1, password2 } = newPassword;
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [typed, showTyped] = useState({
+    field1: false,
+    field2: false,
+  });
+
+  const { field1, field2 } = typed;
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -27,12 +37,12 @@ function TokenPage() {
 
     setLoading(true);
     try {
-      if (field1 !== field2) {
+      if (password1 !== password2) {
         return setErrorMsg("Passwords do not match!");
       }
 
       await axios.post(`${baseUrl}/api/reset/token`, {
-        password: field1,
+        password: password1,
         token: router.query.token,
       });
 
@@ -77,33 +87,45 @@ function TokenPage() {
           <Segment>
             <Form.Input
               fluid
-              icon="eye"
-              type="password"
+              icon={{
+                name: field1 ? "eye slash" : "eye",
+                circular: true,
+                link: true,
+                onClick: () =>
+                  showTyped((prev) => ({ ...prev, field1: !field1 })),
+              }}
+              type={field1 ? "text" : "password"}
               iconPosition="left"
               label="New Password"
               placeholder="Enter new Password"
-              name="field1"
+              name="password1"
               onChange={handleChange}
-              value={field1}
+              value={password1}
               required
             />
             <Form.Input
               fluid
-              icon="eye"
-              type="password"
+              icon={{
+                name: field2 ? "eye slash" : "eye",
+                circular: true,
+                link: true,
+                onClick: () =>
+                  showTyped((prev) => ({ ...prev, field2: !field2 })),
+              }}
+              type={field2 ? "text" : "password"}
               iconPosition="left"
               label="Confirm Password"
               placeholder="Confirm new Password"
-              name="field2"
+              name="password2"
               onChange={handleChange}
-              value={field2}
+              value={password2}
               required
             />
 
             <Divider hidden />
 
             <Button
-              disabled={field1 === "" || field2 === "" || loading}
+              disabled={password1 === "" || password2 === "" || loading}
               icon="configure"
               type="submit"
               color="green"
