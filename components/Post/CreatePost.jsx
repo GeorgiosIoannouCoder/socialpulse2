@@ -178,11 +178,87 @@ function CreatePost({ user, setPosts }) {
     marginTop: "10px",
   });
 
+  // Function to generate the snetiment from post
+  async function sentimentAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
+
+  // Function to generate the topic from post
+  async function topicAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/cardiffnlp/tweet-topic-21-multi",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
+
+  // Function to generate transcription from image
+  async function imageToText(url) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0].generated_text;
+  }
+
+  // Function to detect the adult content from post
+  async function adultContentAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/valurank/finetuned-distilbert-adult-content-detection",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     let picUrl;
     let picCaption;
+    let sentiment;
+    let topic;
+    let adultContent;
 
     if (media !== null) {
       if (typeof media === "object" && media.type) {
@@ -217,56 +293,58 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // Function to generate transcription from image
-    async function imageToText(url) {
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
-        {
-          headers: {
-            Authorization: "Bearer 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",
-          },
-          method: "POST",
-          body: JSON.stringify({ url }),
-        }
-      );
-      const result = await response.json();
+    try {
+      sentiment = await sentimentAnalysis({
+        inputs: newPost.text,
+      });
 
-      return result[0].generated_text;
-    }
-
-    // Function to generate the snetiment from psot
-    async function sentimentAnalysis(data) {
-      const response = await fetch(
-        "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
-        {
-          headers: {
-            Authorization: "Bearer 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",
-          },
-          method: "POST",
-          body: JSON.stringify({ data }),
-        }
-      );
-      const result = await response.json();
-
-      console.log("result =", result);
-      return result[0].generated_text;
-    }
-
-    // const sentiment = await sentimentAnalysis({
-    //   inputs: newPost.text,
-    // });
-
-    sentimentAnalysis({ inputs: "I like you. I love you" }).then((response) => {
-      console.log(JSON.stringify(response));
-    });
-
-    // Console logging the transcription of the image.
-    if (picUrl) {
-      picCaption = await imageToText(picUrl);
-
-      if (!picCaption) {
-        return setError("Error Transcribing Image!");
+      if (!sentiment) {
+        return setError("Error Detecting Sentiment From Post!");
       }
+    } catch (error) {
+      return setError("Error Detecting Sentiment From Post!");
+    }
+
+    try {
+      topic = await topicAnalysis({
+        inputs: newPost.text,
+      });
+
+      if (!topic) {
+        return setError("Error Detecting Topic From Post!");
+      }
+    } catch (error) {
+      return setError("Error Detecting Topic From Post!");
+    }
+
+    try {
+      adultContent = await adultContentAnalysis({
+        inputs: newPost.text,
+      });
+
+      if (adultContent === "LABEL_1") {
+        adultContent = true;
+      } else if (adultContent === "LABEL_0") {
+        adultContent = false;
+      }
+
+      if (adultContent === null) {
+        return setError("Error Detecting Adult Content From Post!");
+      }
+    } catch (error) {
+      return setError("Error Detecting Adult Content From Post!");
+    }
+
+    try {
+      if (picUrl) {
+        picCaption = await imageToText(picUrl);
+
+        if (!picCaption) {
+          return setError("Error Transcribing Image!");
+        }
+      }
+    } catch (error) {
+      return setError("Error Transcribing Image!");
     }
 
     if (audioBlobRef.current != null) {
@@ -303,6 +381,9 @@ function CreatePost({ user, setPosts }) {
       keywords,
       picUrl,
       picCaption,
+      sentiment,
+      topic,
+      adultContent,
       setPosts,
       setNewPost,
       setError

@@ -366,7 +366,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               avatar
               circular
             />
-
             {(user.role === "Super" || post.user._id === user._id) && (
               <>
                 <Popup
@@ -396,7 +395,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                 </Popup>
               </>
             )}
-
             <Card.Header>
               <Link href={`/${post.user.username}`}>
                 <a>
@@ -405,25 +403,23 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                 </a>
               </Link>
             </Card.Header>
-
             <Card.Meta>
               {post.kind === "Trendy" && <Icon name="star" color="yellow" />}
               {post.type} Post @ {calculateTime(post.createdAt)}
             </Card.Meta>
-
             <Card.Meta
               content={[post.company, post.location].filter(Boolean).join(", ")}
             />
-
-            <Card.Meta>
-              <b style={{ color: "#ff0000" }}>
-                {post.company} {post.language} Post
-              </b>
-              {/* //post.textColor */}
-              {/* post.emotion */}
-              {/* post.topic */}
-            </Card.Meta>
-
+            {post.sentiment && post.topic && (
+              <Card.Meta>
+                <b style={{ color: post.textColor }}>
+                  {post.sentiment.charAt(0).toUpperCase() +
+                    post.sentiment.slice(1)}{" "}
+                  Post about{" "}
+                  {post.topic.charAt(0).toUpperCase() + post.topic.slice(1)}
+                </b>
+              </Card.Meta>
+            )}
             <b>
               <Card.Meta
                 content={post.keywords
@@ -432,12 +428,11 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                   .join(", ")}
               />
             </b>
-
             {post.picCaption && (
               <Card.Description
                 style={{
                   fontSize: showFullText || hasRead ? "13px" : "13px",
-                  color: showFullText || hasRead ? "#23272f" : "transparent", //post.textColor
+                  color: showFullText || hasRead ? "#23272f" : "transparent",
                   overflow: "hidden",
                   marginTop: "10px",
                   textShadow: showFullText || hasRead ? "" : "0 0 8px #000",
@@ -447,11 +442,10 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                 Image Caption: {post.picCaption}
               </Card.Description>
             )}
-
             <Card.Description
               style={{
                 fontSize: showFullText || hasRead ? "20px" : "10px",
-                color: showFullText || hasRead ? "#23272f" : "transparent",
+                color: showFullText || hasRead ? post.textColor : "transparent",
                 overflow: "hidden",
                 marginTop: "10px",
                 textShadow: showFullText || hasRead ? "" : "0 0 8px #000",
@@ -460,7 +454,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
             >
               {post.text}
             </Card.Description>
-
             {readySentiment !== null && (
               <pre className="bg-gray-100 p-2 rounded">
                 {!readySentiment || !resultSentiment ? (
@@ -486,7 +479,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                 )}
               </pre>
             )}
-
             <Button
               as="div"
               labelPosition="right"
@@ -498,7 +490,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
             >
               <Icon name="binoculars" size="large" color="black" fitted />
             </Button>
-
             <Modal
               closeIcon
               open={translateModal}
@@ -604,36 +595,83 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               </Modal.Actions>
             </Modal>
 
-            <Button
-              as="div"
-              labelPosition="right"
-              style={{ marginTop: "30px" }}
-              floated="right"
-            >
-              <Button color="black" onClick={readPostOnClick} disabled={isRead}>
-                <Icon
-                  name={isRead ? "eye slash" : "eye"}
-                  style={{ cursor: "pointer" }}
-                  color="green"
-                  size="large"
-                  fitted
-                />
+            {post.adultContent ? (
+              <Popup
+                content="Adult content has been detected in this post!"
+                style={{ color: "#ff0000", fontWeight: "bold" }}
+                trigger={
+                  <Button
+                    as="div"
+                    labelPosition="right"
+                    style={{ marginTop: "30px" }}
+                    floated="right"
+                  >
+                    <Button
+                      color="black"
+                      onClick={readPostOnClick}
+                      disabled={isRead}
+                    >
+                      <Icon
+                        name={isRead ? "eye slash" : "eye"}
+                        style={{ cursor: "pointer" }}
+                        color="green"
+                        size="large"
+                        fitted
+                      />
+                    </Button>
+                    <Label as="a" color="black">
+                      <ReadsList
+                        postId={post._id}
+                        trigger={
+                          reads.length > 0 && (
+                            <span className="spanReadsList">
+                              {`${reads.length} ${
+                                reads.length === 1 ? "read" : "reads"
+                              }`}
+                            </span>
+                          )
+                        }
+                      />
+                    </Label>
+                  </Button>
+                }
+              />
+            ) : (
+              <Button
+                as="div"
+                labelPosition="right"
+                style={{ marginTop: "30px" }}
+                floated="right"
+              >
+                <Button
+                  color="black"
+                  onClick={readPostOnClick}
+                  disabled={isRead}
+                >
+                  <Icon
+                    name={isRead ? "eye slash" : "eye"}
+                    style={{ cursor: "pointer" }}
+                    color="green"
+                    size="large"
+                    fitted
+                  />
+                </Button>
+                <Label as="a" color="black">
+                  <ReadsList
+                    postId={post._id}
+                    trigger={
+                      reads.length > 0 && (
+                        <span className="spanReadsList">
+                          {`${reads.length} ${
+                            reads.length === 1 ? "read" : "reads"
+                          }`}
+                        </span>
+                      )
+                    }
+                  />
+                </Label>
               </Button>
-              <Label as="a" color="black">
-                <ReadsList
-                  postId={post._id}
-                  trigger={
-                    reads.length > 0 && (
-                      <span className="spanReadsList">
-                        {`${reads.length} ${
-                          reads.length === 1 ? "read" : "reads"
-                        }`}
-                      </span>
-                    )
-                  }
-                />
-              </Label>
-            </Button>
+            )}
           </Card.Content>
 
           <Card.Content extra>

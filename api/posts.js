@@ -17,12 +17,23 @@ const {
   newTipNotification,
 } = require("../utilsServer/notificationActions");
 const tabooWords = require("../utils/tabooWords");
+const sentimentColors = require("../utils/sentimentColors");
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
     let { text } = req.body;
-    const { location, company, language, type, keywords, picUrl, picCaption } =
-      req.body;
+    const {
+      location,
+      company,
+      language,
+      type,
+      keywords,
+      picUrl,
+      picCaption,
+      sentiment,
+      topic,
+      adultContent,
+    } = req.body;
 
     const user = await UserModel.findById(req.userId);
     const role = user.role;
@@ -134,6 +145,19 @@ router.post("/", authMiddleware, async (req, res) => {
 
     if (picCaption) {
       newPost.picCaption = picCaption;
+    }
+
+    if (sentiment) {
+      newPost.sentiment = sentiment;
+      newPost.textColor = sentimentColors[sentiment];
+    }
+
+    if (topic) {
+      newPost.topic = topic;
+    }
+
+    if (adultContent) {
+      newPost.adultContent = adultContent;
     }
 
     if (role !== "Super") {
