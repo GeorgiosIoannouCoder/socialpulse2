@@ -327,19 +327,13 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
     });
   };
 
-
-
   const textToSpeech = async () => {
-    try{
-      await playAudio(post.text)
+    try {
+      await playAudio(post.text);
     } catch (error) {
-      console.error('Error occured while playing audio: ')
+      console.error("Error occured while playing audio: ");
     }
-  }
-
-
-
-
+  };
 
   return (
     <>
@@ -483,23 +477,27 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               as="div"
               labelPosition="right"
               floated="left"
-              style={{ marginTop: "5px" }}
-              size="tiny"
+              style={{
+                marginTop: "50px",
+                marginRight: "10px",
+              }}
+              size="large"
               disabled={disabledSentiment}
               onClick={sentimentAnalysisClick}
             >
               <Icon name="binoculars" size="large" color="black" fitted />
             </Button>
-            
+
             <Button
               as="div"
               labelPosition="right"
               floated="left"
-              style={{ marginTop: "5px" }}
-              size="tiny"
+              style={{ marginTop: "50px", marginRight: "10px" }}
+              //style={{ marginRight: "5px" }}
+              size="large"
               onClick={textToSpeech}
             >
-              <Icon name="play" size="large" color="blue" fitted />
+              <Icon name="play" size="large" color="black" fitted />
             </Button>
 
             <Modal
@@ -510,11 +508,11 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                   as="div"
                   labelPosition="right"
                   floated="left"
-                  style={{ marginTop: "5px" }}
-                  size="tiny"
+                  style={{ marginTop: "50px" }}
+                  size="large"
                   onClick={getLanguages}
                 >
-                  <Icon name="translate" size="large" color="blue" fitted />
+                  <Icon name="translate" size="large" color="black" fitted />
                 </Button>
               }
               onClose={() => setTranslateModal(false)}
