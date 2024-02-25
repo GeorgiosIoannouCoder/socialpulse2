@@ -218,7 +218,7 @@ function CreatePost({ user, setPosts }) {
     }
 
     // Function to generate transcription from image
-    async function query(url) {
+    async function imageToText(url) {
       const response = await fetch(
         "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
         {
@@ -234,9 +234,35 @@ function CreatePost({ user, setPosts }) {
       return result[0].generated_text;
     }
 
+    // Function to generate the snetiment from psot
+    async function sentimentAnalysis(data) {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
+        {
+          headers: {
+            Authorization: "Bearer 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",
+          },
+          method: "POST",
+          body: JSON.stringify({ data }),
+        }
+      );
+      const result = await response.json();
+
+      console.log("result =", result);
+      return result[0].generated_text;
+    }
+
+    // const sentiment = await sentimentAnalysis({
+    //   inputs: newPost.text,
+    // });
+
+    sentimentAnalysis({ inputs: newPost.text }).then((response) => {
+      console.log(JSON.stringify(response));
+    });
+
     // Console logging the transcription of the image.
     if (picUrl) {
-      picCaption = await query(picUrl);
+      picCaption = await imageToText(picUrl);
 
       if (!picCaption) {
         return setError("Error Transcribing Image!");
