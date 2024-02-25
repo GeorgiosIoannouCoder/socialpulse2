@@ -71,8 +71,9 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
   const [inputTranslator, setInputTranslator] = useState(post.text);
   const [sourceLanguageTranslator, setSourceLanguageTranslator] =
     useState("eng_Latn");
-  const [targetLanguageTranslator, setTargetLanguageTranslator] =
-    useState("ell_Grek");
+  const [targetLanguageTranslator, setTargetLanguageTranslator] = useState(
+    post.language
+  );
   const [preferredLanguage, setPreferredLanguage] = useState("");
   const [postLanguage, setPostLanguage] = useState("");
   const [outputTranslator, setOutputTranslator] = useState("");
@@ -511,6 +512,10 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               <Header icon="translate" content="Translate Post" />
               <Modal.Content>
                 <Message size="mini" color="orange">
+                  Post owner selected language: {post.language}
+                </Message>
+
+                <Message size="mini" color="orange">
                   {postLanguage.length === 0
                     ? `Post language: ${post.language}`
                     : `Post language detected by model: ${
@@ -526,12 +531,12 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
                   <FormGroup widths="equal">
                     <LanguageSelectorTranslator
                       type={"Source"}
-                      defaultLanguage={"eng_Latn"}
+                      defaultLanguage={post.language}
                       onChange={handleDropdownChangeSourceLanguageTranslator}
                     />
                     <LanguageSelectorTranslator
                       type={"Target"}
-                      defaultLanguage={"ell_Grek"}
+                      defaultLanguage={"eng_Latn"}
                       onChange={handleDropdownChangeTargetLanguageTranslator}
                     />
                   </FormGroup>

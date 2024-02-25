@@ -6,8 +6,11 @@ import {
   Image,
   Divider,
   Message,
+  MessageContent,
+  MessageHeader,
   Icon,
   Dropdown,
+  TextArea,
 } from "semantic-ui-react";
 import uploadPic from "../../utils/uploadPicToCloudinary";
 import uploadVid from "../../utils/uploadVidToCloudinary";
@@ -15,6 +18,8 @@ import uploadAudio from "../../utils/uploadAudioToCloudinary";
 import { submitNewPost } from "../../utils/postActions";
 import CropImageModal from "./CropImageModal";
 import keywordss from "../../utils/keyWords";
+import ProgressTranslator from "../../mlComponents/translator/ProgressTranslator";
+import LanguageSelectorTranslator from "../../mlComponents/translator/LanguageSelectorTranslator";
 
 function CreatePost({ user, setPosts }) {
   const [newPost, setNewPost] = useState({
@@ -22,7 +27,6 @@ function CreatePost({ user, setPosts }) {
     text: "",
     location: "",
     company: "",
-    language: "",
   });
   const [loading, setLoading] = useState(false);
   const inputRef = useRef();
@@ -56,14 +60,121 @@ function CreatePost({ user, setPosts }) {
   ///////////////////////////////////////////////////////
   // REAL TIME SPEECH RECOGNITION
 
-  const updateOutput = (speechline) => {
-    //   console.log(speechline)
+  const [progressItemsTranslator, setProgressItemsTranslator] = useState([]);
+  const [readyTranslator, setReadyTranslator] = useState(null);
+  const [disabledTranslator, setDisabledTranslator] = useState(false);
+  const [outputTranslator, setOutputTranslator] = useState("");
+  const [language, setLanguage] = useState("");
+
+  const handleDropdownChangeTargetLanguageTranslator = async (e, { value }) => {
+    // Update the state with the selected value.
+    setLanguage(value);
+  };
+
+  // Create a reference to the workerTranslator object.
+  const workerTranslator = useRef(null);
+
+  // We use the `useEffect` hook to setup the workerTranslator as soon as the `App` component is mounted.
+  useEffect(() => {
+    if (!workerTranslator.current) {
+      // Create the worker if it does not yet exist.
+      workerTranslator.current = new Worker(
+        new URL(
+          "../../mlComponents/translator/workerTranslator2.js",
+          import.meta.url
+        ),
+        {
+          type: "module",
+        }
+      );
+    }
+
+    // Create a callback function for messages from the workerTranslator thread.
+    const onMessageReceived = (e) => {
+      switch (e.data.status) {
+        case "initiate":
+          // Model file start load: add a new progress item to the list.
+          setReadyTranslator(false);
+          setProgressItemsTranslator((prev) => [...prev, e.data]);
+          break;
+
+        case "progress":
+          // Model file progress: update one of the progress items.
+          setProgressItemsTranslator((prev) =>
+            prev.map((item) => {
+              if (item.file === e.data.file) {
+                return { ...item, progress: e.data.progress };
+              }
+              return item;
+            })
+          );
+          break;
+
+        case "done":
+          // Model file loaded: remove the progress item from the list.
+          setProgressItemsTranslator((prev) =>
+            prev.filter((item) => item.file !== e.data.file)
+          );
+          break;
+
+        case "ready":
+          // Pipeline ready: the workerTranslator is ready to accept messages.
+          setReadyTranslator(true);
+          break;
+
+        case "update":
+          // Generation update: update the output text.
+          setOutputTranslator(e.data.output);
+          break;
+
+        case "complete":
+          // Generation complete: re-enable the "Translate" button.
+          setDisabledTranslator(false);
+          break;
+      }
+    };
+
+    // Attach the callback function as an event listener.
+    workerTranslator.current.addEventListener("message", onMessageReceived);
+
+    // Define a cleanup function for when the component is unmounted.
+    return () =>
+      workerTranslator.current.removeEventListener(
+        "message",
+        onMessageReceived
+      );
+  });
+
+  const translate = () => {
+    setDisabledTranslator(true);
+
+    workerTranslator.current.postMessage({
+      text: speechline,
+      src_lang: "eng_Latn",
+      tgt_lang: language,
+    });
+  };
+
+  let speechline;
+
+  const updateOutputRecognition = (speechline) => {
+    // console.log(speechline);
 
     // Update the newPost state with the recognized speech
     setNewPost((prevState) => ({
       ...prevState,
       // text: prevState.text + speechline // Appending speechline to the existing text in the textarea
       text: speechline, // Appending speechline to the existing text in the textarea
+    }));
+  };
+
+  const updateOutputRecognitionAndTranslation = () => {
+    //   console.log(speechline)
+
+    // Update the newPost state with the recognized speech
+    setNewPost((prevState) => ({
+      ...prevState,
+      text: outputTranslator, // Appending speechline to the existing text in the textarea
     }));
   };
 
@@ -78,8 +189,35 @@ function CreatePost({ user, setPosts }) {
     recognition.maxAlternatives = 1;
 
     recognition.onresult = function (event) {
-      var speechline = event.results[0][0].transcript;
-      updateOutput(speechline);
+      speechline = event.results[0][0].transcript;
+      updateOutputRecognition(speechline);
+    };
+
+    recognition.onspeechend = function () {
+      recognition.stop();
+    };
+    recognition.start();
+  };
+
+  // Function to start speech recognition with the provided stream and translate
+  const startSpeechRecognitionAndTranslation = (stream) => {
+    if (language === "") {
+      return setError(
+        "Cannot start recording! What is the language of the post?"
+      );
+    }
+    var recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.lang = navigator.language;
+    // console.log(recognition.lang)
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function (event) {
+      speechline = event.results[0][0].transcript;
+      translate();
+      updateOutputRecognitionAndTranslation();
     };
 
     recognition.onspeechend = function () {
@@ -376,7 +514,7 @@ function CreatePost({ user, setPosts }) {
       newPost.text,
       newPost.location,
       newPost.company,
-      newPost.language,
+      language,
       type,
       keywords,
       picUrl,
@@ -453,32 +591,79 @@ function CreatePost({ user, setPosts }) {
           />
         </Form.Group>
         {/* Real Time Speech Recognition Button*/}
-        <Button
-          animated="vertical"
-          onClick={startSpeechRecognition}
-          style={{
-            marginLeft: "auto",
-            marginRight: "auto",
-            marginTop: "10px",
-            marginBottom: "20px",
-            display: "block",
-            width: "118px",
-          }}
-          color="black"
-          type="button"
-        >
-          <ButtonContent
-            visible
+        <div className="progress-bars-container">
+          {readyTranslator === false && (
+            <Message icon size="mini" color="black">
+              <Icon name="circle notched" color="blue" loading />
+              <MessageContent>
+                <MessageHeader>Just one minute</MessageHeader>
+                We are loading the models for you.
+              </MessageContent>
+            </Message>
+          )}
+          {progressItemsTranslator.map((data) => (
+            <div key={data.file}>
+              <ProgressTranslator text={data.file} percentage={data.progress} />
+            </div>
+          ))}
+        </div>
+
+        <TextArea
+          placeholder="Translated Text..."
+          value={outputTranslator}
+          rows={3}
+          readOnly
+        />
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            animated="vertical"
+            onClick={startSpeechRecognition}
             style={{
-              color: "#d1d1d1",
+              marginTop: "10px",
+              marginBottom: "20px",
+              width: "118px",
             }}
+            color="black"
+            type="button"
           >
-            Record Post
-          </ButtonContent>
-          <ButtonContent hidden>
-            <Icon color="blue" name="microphone" />
-          </ButtonContent>
-        </Button>
+            <ButtonContent
+              visible
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Record Post
+            </ButtonContent>
+            <ButtonContent hidden>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+
+          <Button
+            animated="vertical"
+            onClick={startSpeechRecognitionAndTranslation}
+            style={{
+              marginTop: "10px",
+              marginBottom: "20px",
+              width: "190px",
+            }}
+            color="black"
+            type="button"
+          >
+            <ButtonContent
+              visible
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Record + Translate Post
+            </ButtonContent>
+            <ButtonContent hidden>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+        </div>
         {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
@@ -504,6 +689,13 @@ function CreatePost({ user, setPosts }) {
             placeholder="Location?"
             required
           />
+
+          <LanguageSelectorTranslator
+            type={"Add Language"}
+            onChange={handleDropdownChangeTargetLanguageTranslator}
+          />
+        </Form.Group>
+        <Form.Group>
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Input
               value={newPost.company}
@@ -514,16 +706,6 @@ function CreatePost({ user, setPosts }) {
               placeholder="Company name?"
             />
           )}
-          <Form.Input
-            value={newPost.language}
-            name="language"
-            onChange={handleChange}
-            label="Add Language"
-            icon="language"
-            placeholder="Language?"
-            style={{ width: "145px", marginBottom: "10px" }}
-            required
-          />
           {/* allowing users to choose their post type */}
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Dropdown

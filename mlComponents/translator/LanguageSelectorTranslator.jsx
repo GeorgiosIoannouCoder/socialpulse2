@@ -228,18 +228,8 @@ export default function LanguageSelectorTranslator({
         search
         selection
         clearable
+        required
       />
-
-      {/* <label>{type}: </label> */}
-      {/* <select onChange={onChange} defaultValue={defaultLanguage}>
-        {Object.entries(LANGUAGES).map(([key, value]) => {
-          return (
-            <option key={key} value={value}>
-              {key}
-            </option>
-          );
-        })}
-      </select> */}
     </>
   );
 }
