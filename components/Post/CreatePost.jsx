@@ -57,14 +57,15 @@ function CreatePost({ user, setPosts }) {
   const mediaRecorder = useRef(null);
   const mimeType = "audio/webm";
 
-  ///////////////////////////////////////////////////////
-  // REAL TIME SPEECH RECOGNITION
+  // REAL TIME SPEECH RECOGNITION AND TRANSLATION
 
   const [progressItemsTranslator, setProgressItemsTranslator] = useState([]);
   const [readyTranslator, setReadyTranslator] = useState(null);
   const [disabledTranslator, setDisabledTranslator] = useState(false);
   const [outputTranslator, setOutputTranslator] = useState("");
   const [language, setLanguage] = useState("");
+
+  let speechline;
 
   const handleDropdownChangeTargetLanguageTranslator = async (e, { value }) => {
     // Update the state with the selected value.
@@ -155,8 +156,6 @@ function CreatePost({ user, setPosts }) {
     });
   };
 
-  let speechline;
-
   const updateOutputRecognition = (speechline) => {
     // console.log(speechline);
 
@@ -168,7 +167,7 @@ function CreatePost({ user, setPosts }) {
     }));
   };
 
-  const updateOutputRecognitionAndTranslation = () => {
+  const updateOutputRecognitionAndTranslation = (outputTranslator) => {
     //   console.log(speechline)
 
     // Update the newPost state with the recognized speech
@@ -217,7 +216,7 @@ function CreatePost({ user, setPosts }) {
     recognition.onresult = function (event) {
       speechline = event.results[0][0].transcript;
       translate();
-      updateOutputRecognitionAndTranslation();
+      updateOutputRecognitionAndTranslation(outputTranslator);
     };
 
     recognition.onspeechend = function () {
