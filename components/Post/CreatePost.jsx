@@ -178,7 +178,6 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // Uploading the audio to cloudinary when user posts.
     // Automatic Speech Recognition.
     // Console logging the transcription of the image
     if (picUrl) {
@@ -189,6 +188,7 @@ function CreatePost({ user, setPosts }) {
         .catch((error) => {
           console.error("Error querying model:", error);
         });
+    }
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
@@ -530,6 +530,6 @@ function CreatePost({ user, setPosts }) {
     </>
   );
 }
-}
+
 export default CreatePost;
 
