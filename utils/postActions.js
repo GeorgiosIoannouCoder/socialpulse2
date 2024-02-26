@@ -16,6 +16,10 @@ export const submitNewPost = async (
   type,
   keywords,
   picUrl,
+  picCaption,
+  sentiment,
+  topic,
+  adultContent,
   setPosts,
   setNewPost,
   setError
@@ -29,6 +33,10 @@ export const submitNewPost = async (
       type,
       keywords,
       picUrl,
+      picCaption,
+      sentiment,
+      topic,
+      adultContent,
     });
 
     setPosts((prev) => [res.data, ...prev]);

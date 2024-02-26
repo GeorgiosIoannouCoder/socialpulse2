@@ -6,8 +6,11 @@ import {
   Image,
   Divider,
   Message,
+  MessageContent,
+  MessageHeader,
   Icon,
   Dropdown,
+  TextArea,
 } from "semantic-ui-react";
 import uploadPic from "../../utils/uploadPicToCloudinary";
 import uploadVid from "../../utils/uploadVidToCloudinary";
@@ -15,6 +18,8 @@ import uploadAudio from "../../utils/uploadAudioToCloudinary";
 import { submitNewPost } from "../../utils/postActions";
 import CropImageModal from "./CropImageModal";
 import keywordss from "../../utils/keyWords";
+import ProgressTranslator from "../../mlComponents/translator/ProgressTranslator";
+import LanguageSelectorTranslator from "../../mlComponents/translator/LanguageSelectorTranslator";
 
 function CreatePost({ user, setPosts }) {
   const [newPost, setNewPost] = useState({
@@ -22,7 +27,6 @@ function CreatePost({ user, setPosts }) {
     text: "",
     location: "",
     company: "",
-    language: "",
   });
   const [loading, setLoading] = useState(false);
   const inputRef = useRef();
@@ -51,8 +55,177 @@ function CreatePost({ user, setPosts }) {
   const [audioChunks, setAudioChunks] = useState([]);
   const [audio, setAudio] = useState(null);
   const mediaRecorder = useRef(null);
-
   const mimeType = "audio/webm";
+
+  // REAL TIME SPEECH RECOGNITION AND TRANSLATION
+
+  const [progressItemsTranslator, setProgressItemsTranslator] = useState([]);
+  const [readyTranslator, setReadyTranslator] = useState(null);
+  const [disabledTranslator, setDisabledTranslator] = useState(false);
+  const [outputTranslator, setOutputTranslator] = useState("");
+  const [language, setLanguage] = useState("");
+
+  let speechline;
+
+  const handleDropdownChangeTargetLanguageTranslator = async (e, { value }) => {
+    // Update the state with the selected value.
+    setLanguage(value);
+  };
+
+  // Create a reference to the workerTranslator object.
+  const workerTranslator = useRef(null);
+
+  // We use the `useEffect` hook to setup the workerTranslator as soon as the `App` component is mounted.
+  useEffect(() => {
+    if (!workerTranslator.current) {
+      // Create the worker if it does not yet exist.
+      workerTranslator.current = new Worker(
+        new URL(
+          "../../mlComponents/translator/workerTranslator2.js",
+          import.meta.url
+        ),
+        {
+          type: "module",
+        }
+      );
+    }
+
+    // Create a callback function for messages from the workerTranslator thread.
+    const onMessageReceived = (e) => {
+      switch (e.data.status) {
+        case "initiate":
+          // Model file start load: add a new progress item to the list.
+          setReadyTranslator(false);
+          setProgressItemsTranslator((prev) => [...prev, e.data]);
+          break;
+
+        case "progress":
+          // Model file progress: update one of the progress items.
+          setProgressItemsTranslator((prev) =>
+            prev.map((item) => {
+              if (item.file === e.data.file) {
+                return { ...item, progress: e.data.progress };
+              }
+              return item;
+            })
+          );
+          break;
+
+        case "done":
+          // Model file loaded: remove the progress item from the list.
+          setProgressItemsTranslator((prev) =>
+            prev.filter((item) => item.file !== e.data.file)
+          );
+          break;
+
+        case "ready":
+          // Pipeline ready: the workerTranslator is ready to accept messages.
+          setReadyTranslator(true);
+          break;
+
+        case "update":
+          // Generation update: update the output text.
+          setOutputTranslator(e.data.output);
+          break;
+
+        case "complete":
+          // Generation complete: re-enable the "Translate" button.
+          setDisabledTranslator(false);
+          break;
+      }
+    };
+
+    // Attach the callback function as an event listener.
+    workerTranslator.current.addEventListener("message", onMessageReceived);
+
+    // Define a cleanup function for when the component is unmounted.
+    return () =>
+      workerTranslator.current.removeEventListener(
+        "message",
+        onMessageReceived
+      );
+  });
+
+  const translate = () => {
+    setDisabledTranslator(true);
+
+    workerTranslator.current.postMessage({
+      text: speechline,
+      src_lang: "eng_Latn",
+      tgt_lang: language,
+    });
+  };
+
+  const updateOutputRecognition = (speechline) => {
+    // console.log(speechline);
+
+    // Update the newPost state with the recognized speech
+    setNewPost((prevState) => ({
+      ...prevState,
+      // text: prevState.text + speechline // Appending speechline to the existing text in the textarea
+      text: speechline, // Appending speechline to the existing text in the textarea
+    }));
+  };
+
+  const updateOutputRecognitionAndTranslation = (outputTranslator) => {
+    //   console.log(speechline)
+
+    // Update the newPost state with the recognized speech
+    setNewPost((prevState) => ({
+      ...prevState,
+      text: outputTranslator, // Appending speechline to the existing text in the textarea
+    }));
+  };
+
+  // Function to start speech recognition with the provided stream
+  const startSpeechRecognition = (stream) => {
+    var recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.lang = navigator.language;
+    // console.log(recognition.lang)
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function (event) {
+      speechline = event.results[0][0].transcript;
+      updateOutputRecognition(speechline);
+    };
+
+    recognition.onspeechend = function () {
+      recognition.stop();
+    };
+    recognition.start();
+  };
+
+  // Function to start speech recognition with the provided stream and translate
+  const startSpeechRecognitionAndTranslation = (stream) => {
+    if (language === "") {
+      return setError(
+        "Cannot start recording! What is the language of the post?"
+      );
+    }
+    var recognition = new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.lang = navigator.language;
+    // console.log(recognition.lang)
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function (event) {
+      speechline = event.results[0][0].transcript;
+      translate();
+      updateOutputRecognitionAndTranslation(outputTranslator);
+    };
+
+    recognition.onspeechend = function () {
+      recognition.stop();
+    };
+    recognition.start();
+  };
+
+  /////////////////////////////////////////////////////
 
   // Getting the microphone permission from the user.
   const getMicrophonePermission = async () => {
@@ -68,7 +241,9 @@ function CreatePost({ user, setPosts }) {
         alert(err.message);
       }
     } else {
-      alert("The MediaRecorder API is not supported in your browser.");
+      return setError(
+        "The MediaRecorder API is not supported in your browser!"
+      );
     }
   };
 
@@ -137,13 +312,90 @@ function CreatePost({ user, setPosts }) {
     paddingTop: media === null && "60px",
     cursor: "pointer",
     borderColor: highlighted ? "green" : "black",
-    marginTop: "50px",
+    marginTop: "10px",
   });
+
+  // Function to generate the snetiment from post
+  async function sentimentAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/SamLowe/roberta-base-go_emotions",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
+
+  // Function to generate the topic from post
+  async function topicAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/cardiffnlp/tweet-topic-21-multi",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
+
+  // Function to generate transcription from image
+  async function imageToText(url) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0].generated_text;
+  }
+
+  // Function to detect the adult content from post
+  async function adultContentAnalysis(data) {
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/valurank/finetuned-distilbert-adult-content-detection",
+      {
+        headers: {
+          Authorization: "Bearer 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",
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+
+    const result = await response.json();
+
+    return result[0][0]["label"];
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     let picUrl;
+    let picCaption;
+    let sentiment;
+    let topic;
+    let adultContent;
 
     if (media !== null) {
       if (typeof media === "object" && media.type) {
@@ -156,9 +408,6 @@ function CreatePost({ user, setPosts }) {
           }
         } else if (media.type.startsWith("video/")) {
           picUrl = await uploadVid(media);
-
-          // console.log("video url: ", picUrl);
-
           if (!picUrl) {
             setLoading(false);
             return setError("Error Uploading Video!");
@@ -181,8 +430,60 @@ function CreatePost({ user, setPosts }) {
       }
     }
 
-    // Uploading the audio to cloudinary when user posts.
-    // Automatic Speech Recognition.
+    try {
+      sentiment = await sentimentAnalysis({
+        inputs: newPost.text,
+      });
+
+      if (!sentiment) {
+        return setError("Error Detecting Sentiment From Post!");
+      }
+    } catch (error) {
+      return setError("Error Detecting Sentiment From Post!");
+    }
+
+    try {
+      topic = await topicAnalysis({
+        inputs: newPost.text,
+      });
+
+      if (!topic) {
+        return setError("Error Detecting Topic From Post!");
+      }
+    } catch (error) {
+      return setError("Error Detecting Topic From Post!");
+    }
+
+    try {
+      adultContent = await adultContentAnalysis({
+        inputs: newPost.text,
+      });
+
+      if (adultContent === "LABEL_1") {
+        adultContent = true;
+      } else if (adultContent === "LABEL_0") {
+        adultContent = false;
+      }
+
+      if (adultContent === null) {
+        return setError("Error Detecting Adult Content From Post!");
+      }
+    } catch (error) {
+      return setError("Error Detecting Adult Content From Post!");
+    }
+
+    try {
+      if (picUrl) {
+        picCaption = await imageToText(picUrl);
+
+        if (!picCaption) {
+          return setError("Error Transcribing Image!");
+        }
+      }
+    } catch (error) {
+      return setError("Error Transcribing Image!");
+    }
+
     if (audioBlobRef.current != null) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
@@ -202,8 +503,7 @@ function CreatePost({ user, setPosts }) {
         );
 
         const output = await transcriber(audioUploadUrl);
-
-        console.log("Audio transcription output: ", output);
+        // console.log("Audio transcription output:", output.text);
       } catch (error) {
         return setError("Error Transcribing Audio!");
       }
@@ -213,10 +513,14 @@ function CreatePost({ user, setPosts }) {
       newPost.text,
       newPost.location,
       newPost.company,
-      newPost.language,
+      language,
       type,
       keywords,
       picUrl,
+      picCaption,
+      sentiment,
+      topic,
+      adultContent,
       setPosts,
       setNewPost,
       setError
@@ -254,7 +558,7 @@ function CreatePost({ user, setPosts }) {
     // Update the state with the selected value.
     setKeywords((prevKeywords) => [...prevKeywords, value]);
   };
-
+  // ===============================================================================================
   return (
     <>
       {showModal && (
@@ -265,7 +569,6 @@ function CreatePost({ user, setPosts }) {
           setShowModal={setShowModal}
         />
       )}
-
       <Form error={error !== null} onSubmit={handleSubmit}>
         <Message
           error
@@ -277,6 +580,7 @@ function CreatePost({ user, setPosts }) {
         <Form.Group>
           <Image src={user.profilePicUrl} circular avatar inline />
           <Form.TextArea
+            id="convert_text"
             placeholder="What's New?"
             name="text"
             value={newPost.text}
@@ -285,6 +589,83 @@ function CreatePost({ user, setPosts }) {
             width={14}
           />
         </Form.Group>
+        {/* Real Time Speech Recognition Button*/}
+        <div className="progress-bars-container">
+          {readyTranslator === false && (
+            <Message icon size="mini" color="black">
+              <Icon name="circle notched" color="blue" loading />
+              <MessageContent>
+                <MessageHeader>Just one minute</MessageHeader>
+                We are loading the models for you.
+              </MessageContent>
+            </Message>
+          )}
+          {progressItemsTranslator.map((data) => (
+            <div key={data.file}>
+              <ProgressTranslator text={data.file} percentage={data.progress} />
+            </div>
+          ))}
+        </div>
+
+        {outputTranslator && (
+          <TextArea
+            placeholder="Translated Post..."
+            value={outputTranslator}
+            rows={3}
+            readOnly
+          />
+        )}
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Button
+            animated="vertical"
+            onClick={startSpeechRecognition}
+            style={{
+              marginTop: "10px",
+              marginBottom: "20px",
+              width: "118px",
+            }}
+            color="black"
+            type="button"
+          >
+            <ButtonContent
+              visible
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Record Post
+            </ButtonContent>
+            <ButtonContent hidden>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+
+          <Button
+            animated="vertical"
+            onClick={startSpeechRecognitionAndTranslation}
+            style={{
+              marginTop: "10px",
+              marginBottom: "20px",
+              width: "190px",
+            }}
+            color="black"
+            type="button"
+          >
+            <ButtonContent
+              visible
+              style={{
+                color: "#d1d1d1",
+              }}
+            >
+              Record + Translate Post
+            </ButtonContent>
+            <ButtonContent hidden>
+              <Icon color="blue" name="microphone" />
+            </ButtonContent>
+          </Button>
+        </div>
+        {/* allowing users to select keywords for their post */}
         <Form.Field>
           <label>Keywords</label>
           <Dropdown
@@ -309,6 +690,13 @@ function CreatePost({ user, setPosts }) {
             placeholder="Location?"
             required
           />
+
+          <LanguageSelectorTranslator
+            type={"Add Language"}
+            onChange={handleDropdownChangeTargetLanguageTranslator}
+          />
+        </Form.Group>
+        <Form.Group>
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Input
               value={newPost.company}
@@ -319,15 +707,6 @@ function CreatePost({ user, setPosts }) {
               placeholder="Company name?"
             />
           )}
-          <Form.Input
-            value={newPost.language}
-            name="language"
-            onChange={handleChange}
-            label="Add Language"
-            icon="language"
-            placeholder="Language?"
-            style={{ width: "145px", marginBottom: "10px" }}
-          />
           {/* allowing users to choose their post type */}
           {(user.role === "Super" || user.role === "Corporate") && (
             <Form.Dropdown
@@ -354,7 +733,80 @@ function CreatePost({ user, setPosts }) {
             type="file"
             accept="image/*, video/*"
           />
+          <br />
         </Form.Group>
+        <div className="audio-controls">
+          {!permission ? (
+            <Button
+              animated="vertical"
+              onClick={getMicrophonePermission}
+              style={{
+                width: "144px",
+                marginTop: "5px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                visible
+                style={{
+                  color: "#d1d1d1",
+                }}
+              >
+                Record Location
+              </ButtonContent>
+              <ButtonContent hidden>
+                <Icon color="blue" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+          {permission && recordingStatus === "inactive" ? (
+            <Button
+              animated="vertical"
+              onClick={startRecording}
+              style={{
+                width: "115px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                hidden
+                style={{
+                  color: "#0e6eb8",
+                }}
+              >
+                Start Recording
+              </ButtonContent>
+              <ButtonContent visible>
+                <Icon color="blue" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+          {recordingStatus === "recording" ? (
+            <Button
+              animated="vertical"
+              onClick={stopRecording}
+              style={{
+                width: "115px",
+              }}
+              color="black"
+              type="button"
+            >
+              <ButtonContent
+                hidden
+                style={{
+                  color: "#00ff00",
+                }}
+              >
+                Stop Recording
+              </ButtonContent>
+              <ButtonContent visible>
+                <Icon color="green" name="microphone" />
+              </ButtonContent>
+            </Button>
+          ) : null}
+        </div>
 
         <div
           onClick={() => inputRef.current.click()}
@@ -433,77 +885,6 @@ function CreatePost({ user, setPosts }) {
           loading={loading}
         />
       </Form>
-      <div className="audio-controls">
-        {!permission ? (
-          <Button
-            animated="vertical"
-            onClick={getMicrophonePermission}
-            style={{
-              marginTop: "-510px",
-              width: "125px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              visible
-              style={{
-                color: "#d1d1d1",
-              }}
-            >
-              Add Location
-            </ButtonContent>
-            <ButtonContent hidden>
-              <Icon color="blue" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-        {permission && recordingStatus === "inactive" ? (
-          <Button
-            animated="vertical"
-            onClick={startRecording}
-            style={{
-              marginTop: "-510px",
-              width: "115px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              hidden
-              style={{
-                color: "#ff0000",
-              }}
-            >
-              Start Recording
-            </ButtonContent>
-            <ButtonContent visible>
-              <Icon color="red" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-        {recordingStatus === "recording" ? (
-          <Button
-            animated="vertical"
-            onClick={stopRecording}
-            style={{
-              marginTop: "-510px",
-              width: "115px",
-            }}
-            color="black"
-          >
-            <ButtonContent
-              hidden
-              style={{
-                color: "#00ff00",
-              }}
-            >
-              Stop Recording
-            </ButtonContent>
-            <ButtonContent visible>
-              <Icon color="green" name="microphone" />
-            </ButtonContent>
-          </Button>
-        ) : null}
-      </div>
       <Divider />
     </>
   );

@@ -232,7 +232,7 @@ function PostPage({ post, errorLoading, user, setPosts, setShowToastr }) {
                 }}
                 onCopy={(e) => e.preventDefault()}
               >
-                {post.text}       // Use this for the input
+                {post.text}
               </Card.Description>
               <Button
                 as="div"

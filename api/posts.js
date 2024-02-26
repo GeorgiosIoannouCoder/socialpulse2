@@ -17,11 +17,23 @@ const {
   newTipNotification,
 } = require("../utilsServer/notificationActions");
 const tabooWords = require("../utils/tabooWords");
+const sentimentColors = require("../utils/sentimentColors");
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
     let { text } = req.body;
-    const { location, company, language, type, keywords, picUrl } = req.body;
+    const {
+      location,
+      company,
+      language,
+      type,
+      keywords,
+      picUrl,
+      picCaption,
+      sentiment,
+      topic,
+      adultContent,
+    } = req.body;
 
     const user = await UserModel.findById(req.userId);
     const role = user.role;
@@ -129,6 +141,23 @@ router.post("/", authMiddleware, async (req, res) => {
 
     if (picUrl) {
       newPost.picUrl = picUrl;
+    }
+
+    if (picCaption) {
+      newPost.picCaption = picCaption;
+    }
+
+    if (sentiment) {
+      newPost.sentiment = sentiment;
+      newPost.textColor = sentimentColors[sentiment];
+    }
+
+    if (topic) {
+      newPost.topic = topic;
+    }
+
+    if (adultContent) {
+      newPost.adultContent = adultContent;
     }
 
     if (role !== "Super") {
@@ -831,8 +860,12 @@ router.post("/tip/:postId", authMiddleware, async (req, res) => {
     const post = await PostModel.findById(postId);
 
     // Check if the user has enough balance and tips combined to tip.
-    if (user.accountBalance + user.tips < tipAmount) {
-      return res.status(400).send("Insufficient Account Balance For Tipping!");
+    if (user.role !== "Super") {
+      if (user.accountBalance + user.tips < tipAmount) {
+        return res
+          .status(400)
+          .send("Insufficient Account Balance For Tipping!");
+      }
     }
 
     // // Check if the user has enough balance to tip.
@@ -844,12 +877,14 @@ router.post("/tip/:postId", authMiddleware, async (req, res) => {
     // user.accountBalance -= tipAmount;
 
     // Deduct the tipAmount from the user's accountBalance or tips (whichever is available).
-    if (user.accountBalance >= tipAmount) {
-      user.accountBalance -= tipAmount;
-    } else {
-      // If the account balance is not enough, deduct from tips.
-      user.tips -= tipAmount - user.accountBalance;
-      user.accountBalance = 0;
+    if (user.role !== "Super") {
+      if (user.accountBalance >= tipAmount) {
+        user.accountBalance -= tipAmount;
+      } else {
+        // If the account balance is not enough, deduct from tips.
+        user.tips -= tipAmount - user.accountBalance;
+        user.accountBalance = 0;
+      }
     }
 
     // Add the tipAmount to the post owner's tips.
