@@ -509,7 +509,6 @@ function CardPost({ post, user, setPosts, setShowToastr }) {
               labelPosition="right"
               floated="left"
               style={{ marginTop: "50px", marginRight: "10px" }}
-              //style={{ marginRight: "5px" }}
               size="large"
               onClick={textToSpeech}
             >
