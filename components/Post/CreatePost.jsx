@@ -436,10 +436,10 @@ function CreatePost({ user, setPosts }) {
       });
 
       if (!sentiment) {
-        return setError("Error Detecting Sentiment From Post!");
+        sentiment = "Unemotional";
       }
     } catch (error) {
-      return setError("Error Detecting Sentiment From Post!");
+      sentiment = "Unemotional";
     }
 
     try {
@@ -486,6 +486,7 @@ function CreatePost({ user, setPosts }) {
       const audioUploadUrl = await uploadAudio(audioBlobRef.current);
 
       if (!audioUploadUrl) {
+        setLoading(false);
         return setError("Error Uploading Audio!");
       }
 
@@ -503,6 +504,7 @@ function CreatePost({ user, setPosts }) {
         const output = await transcriber(audioUploadUrl);
         // console.log("Audio transcription output:", output.text);
       } catch (error) {
+        setLoading(false);
         return setError("Error Transcribing Audio!");
       }
     }

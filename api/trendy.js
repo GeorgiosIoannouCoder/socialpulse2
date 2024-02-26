@@ -20,10 +20,29 @@ const tabooWords = require("../utils/tabooWords");
 router.post("/", authMiddleware, async (req, res) => {
   try {
     let { text } = req.body;
-    const { location, company, language, type, keywords, picUrl } = req.body;
+    const {
+      location,
+      company,
+      language,
+      type,
+      keywords,
+      picUrl,
+      picCaption,
+      sentiment,
+      topic,
+      adultContent,
+    } = req.body;
 
     const user = await UserModel.findById(req.userId);
     const role = user.role;
+
+    let wordCount = 0;
+    const trimmedStr = text.trim();
+    if (trimmedStr === "") {
+      wordCount = 0;
+    }
+    const words = trimmedStr.split(/\s+/);
+    wordCount = words.length;
 
     // function to count the number of taboowords in the users post
     function countTabooWords() {
@@ -42,36 +61,38 @@ router.post("/", authMiddleware, async (req, res) => {
       return count;
     }
 
-    // function to replace taboowords with ****
     function censorTabooWords() {
-      //variable to be the new text
+      // Variable to be the new text
       let newText = "";
 
-      // variable to get all the words in the users text
-      let textWords = text.split(" ");
+      // Variable to get all the words in the users text
+      let textWords = text.split(/\s+/); // Use regex to split by any whitespace
 
-      // iterate through all textWords
+      // Iterate through all textWords
       for (let i = 0; i < textWords.length; i++) {
-        if (tabooWords.includes(textWords[i])) {
-          let lenOfTabooWord = textWords[i].length;
+        // Remove trailing punctuation marks
+        let word = textWords[i].replace(/[^\w\s]/gi, "");
+        if (tabooWords.includes(word)) {
+          let lenOfTabooWord = word.length;
           let stars = "";
 
-          // get the appropriate number of stars
+          // Get the appropriate number of stars
           for (let j = 0; j < lenOfTabooWord; j++) {
             stars += "*";
           }
           textWords[i] = stars;
         }
       }
+
       newText = textWords.join(" ");
 
       return newText;
     }
 
-    // variable to store the number of taboowords the user has
+    // Variable to store the number of taboowords the user has
     let taboowords = countTabooWords();
 
-    // checking the number of taboowords the user has
+    // Checking the number of taboowords the user has
     if (taboowords >= 3) {
       return res.status(401).send("Post cannot have more than 3 taboo words!");
     }
@@ -88,7 +109,7 @@ router.post("/", authMiddleware, async (req, res) => {
       return res.status(401).send("What is the language of the post?");
     }
 
-    // replace text with the censored version
+    // Replace text with the censored version
     text = censorTabooWords();
 
     const newPost = {
@@ -118,6 +139,29 @@ router.post("/", authMiddleware, async (req, res) => {
 
     if (picUrl) {
       newPost.picUrl = picUrl;
+    }
+
+    if (picCaption === "") {
+      return res.status(401).send("Error in transcribing image!");
+    } else {
+      newPost.picCaption = picCaption;
+    }
+
+    if (sentiment === "Unemotional") {
+      return res.status(401).send("Error in detecting post sentiment!");
+    } else {
+      newPost.sentiment = sentiment;
+      newPost.textColor = sentimentColors[sentiment];
+    }
+
+    if (topic === "General") {
+      return res.status(401).send("Error in detecting post topic!");
+    } else {
+      newPost.topic = topic;
+    }
+
+    if (adultContent) {
+      newPost.adultContent = adultContent;
     }
 
     const post = await new PostModel(newPost).save();

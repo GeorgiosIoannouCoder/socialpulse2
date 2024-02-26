@@ -143,16 +143,22 @@ router.post("/", authMiddleware, async (req, res) => {
       newPost.picUrl = picUrl;
     }
 
-    if (picCaption) {
+    if (picCaption === "") {
+      return res.status(401).send("Error in transcribing image!");
+    } else {
       newPost.picCaption = picCaption;
     }
 
-    if (sentiment) {
+    if (sentiment === "Unemotional") {
+      return res.status(401).send("Error in detecting post sentiment!");
+    } else {
       newPost.sentiment = sentiment;
       newPost.textColor = sentimentColors[sentiment];
     }
 
-    if (topic) {
+    if (topic === "General") {
+      return res.status(401).send("Error in detecting post topic!");
+    } else {
       newPost.topic = topic;
     }
 
