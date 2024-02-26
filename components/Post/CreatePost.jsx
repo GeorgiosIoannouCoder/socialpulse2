@@ -448,10 +448,10 @@ function CreatePost({ user, setPosts }) {
       });
 
       if (!topic) {
-        return setError("Error Detecting Topic From Post!");
+        topic = "General";
       }
     } catch (error) {
-      return setError("Error Detecting Topic From Post!");
+      topic = "General";
     }
 
     try {
@@ -463,13 +463,11 @@ function CreatePost({ user, setPosts }) {
         adultContent = true;
       } else if (adultContent === "LABEL_0") {
         adultContent = false;
-      }
-
-      if (adultContent === null) {
-        return setError("Error Detecting Adult Content From Post!");
+      } else {
+        adultContent = false;
       }
     } catch (error) {
-      return setError("Error Detecting Adult Content From Post!");
+      adultContent = false;
     }
 
     try {
@@ -477,11 +475,11 @@ function CreatePost({ user, setPosts }) {
         picCaption = await imageToText(picUrl);
 
         if (!picCaption) {
-          return setError("Error Transcribing Image!");
+          picCaption = "";
         }
       }
     } catch (error) {
-      return setError("Error Transcribing Image!");
+      picCaption = "";
     }
 
     if (audioBlobRef.current != null) {
