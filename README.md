@@ -74,7 +74,7 @@
 
 ### Key Features
 
-1. **Five type of users:**
+1. **Five types of users:**
    1. ***[Super User (SU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
       1. **Super users on our platform are capable of adding/removing warnings on the user's profile page along with deleting users and posts.**
    2. ***[Corporate User (CU)](https://github.com/GeorgiosIoannouCoder/socialpulse2#usage)***
